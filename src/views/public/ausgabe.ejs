@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= ausgabe.gemeindeName %> — Mitteilungsblatt Nr. <%= ausgabe.nummer %>/<%= ausgabe.jahr %></title>
+  <% var withPrint = true; %>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="site">
+    <header class="masthead">
+      <% if (settings.logoPath) { %><img src="<%= settings.logoPath %>" alt="" style="height:60px; width:auto; margin:0 auto 1rem;"><% } %>
+      <div class="masthead__gemeinde"><%= ausgabe.gemeindeName %></div>
+      <% if (ausgabe.untertitel) { %><div class="masthead__untertitel"><%= ausgabe.untertitel %></div><% } %>
+      <div class="masthead__dateline">Ausgabe Nr. <%= ausgabe.nummer %> / <%= ausgabe.jahr %> &nbsp;·&nbsp; <%= formatDatum(ausgabe.datum) %></div>
+      <nav class="site-nav">
+        <a href="/">Aktuelle Ausgabe</a> · <a href="/archiv">Archiv</a>
+        <% if (ausgabe.pdfPath) { %> · <a href="<%= ausgabe.pdfPath %>" class="no-print">PDF herunterladen</a><% } %>
+      </nav>
+    </header>
+
+    <% if (ausgabe.titelbildPath) { %>
+      <div class="titelbild"><img src="<%= ausgabe.titelbildPath %>" alt="Titelbild"></div>
+    <% } %>
+
+    <% if (ausgabe.featuredVeranstaltungen && ausgabe.featuredVeranstaltungen.length) { %>
+      <h2 class="section-heading">Wichtigste Veranstaltungen</h2>
+      <% ausgabe.featuredVeranstaltungen.forEach(v => { %>
+        <% const t = formatTag(v.datum); %>
+        <div class="event-card">
+          <div class="event-date-badge"><span class="day"><%= t.tag %></span><span class="rest"><%= t.rest %></span></div>
+          <div>
+            <h4><%= v.titel %></h4>
+            <div class="event-meta"><%= [v.organisation, v.uhrzeit, v.ort].filter(Boolean).join(' · ') %></div>
+            <% if (v.beschreibung) { %><p><%= v.beschreibung %></p><% } %>
+            <% if (v.bildPath) { %><img src="<%= v.bildPath %>" alt=""><% } %>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+
+    <% if (ausgabe.servicerubriken && ausgabe.servicerubriken.length) { %>
+      <h2 class="section-heading">Service &amp; Notfallnummern</h2>
+      <div class="service-grid">
+        <% ausgabe.servicerubriken.forEach(r => { %>
+          <div class="service-box">
+            <h4><%= r.titel %></h4>
+            <p><%= r.inhalt %></p>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% const gemVer = (ausgabe.gemeindeweitVeranstaltungen || []).filter(v => !v.featured); %>
+    <% const gemNewsGruppen = ausgabe.gemeindeweitNewsGruppiert || []; %>
+    <% if (gemVer.length || gemNewsGruppen.length) { %>
+      <h2 class="section-heading">Allgemeines aus der Gemeinde</h2>
+      <% if (gemVer.length) { %>
+        <div class="subsection-heading">Veranstaltungen</div>
+        <% gemVer.forEach(v => { %>
+          <% const t = formatTag(v.datum); %>
+          <div class="event-card">
+            <div class="event-date-badge"><span class="day"><%= t.tag %></span><span class="rest"><%= t.rest %></span></div>
+            <div>
+              <h4><%= v.titel %></h4>
+              <div class="event-meta"><%= [v.organisation, v.uhrzeit, v.ort].filter(Boolean).join(' · ') %></div>
+              <% if (v.beschreibung) { %><p><%= v.beschreibung %></p><% } %>
+              <% if (v.bildPath) { %><img src="<%= v.bildPath %>" alt=""><% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+      <% gemNewsGruppen.forEach(gruppe => { %>
+        <div class="subsection-heading"><%= gruppe.rubrik %></div>
+        <% gruppe.items.forEach(n => { %>
+          <div class="news-item">
+            <% if (n.organisation) { %><div class="news-org-label"><%= n.organisation %></div><% } %>
+            <h4><%= n.titel %></h4>
+            <% if (n.inhalt) { %><p><%= n.inhalt %></p><% } %>
+            <% if (n.bildPath) { %><img src="<%= n.bildPath %>" alt=""><% } %>
+          </div>
+        <% }) %>
+      <% }) %>
+    <% } %>
+
+    <% (ausgabe.ortsteile || []).forEach(ot => { %>
+      <% const ver = (ot.veranstaltungen || []).filter(v => !v.featured); %>
+      <% const newsGruppen = ot.newsGruppiert || []; %>
+      <% if (ver.length || newsGruppen.length) { %>
+        <h2 class="section-heading">Aus <%= ot.name %></h2>
+        <div class="ortsteil-block">
+          <span class="ortsteil-label"><%= ot.name %></span>
+          <% if (ver.length) { %>
+            <div class="subsection-heading">Veranstaltungen</div>
+            <% ver.forEach(v => { %>
+              <% const t = formatTag(v.datum); %>
+              <div class="event-card">
+                <div class="event-date-badge"><span class="day"><%= t.tag %></span><span class="rest"><%= t.rest %></span></div>
+                <div>
+                  <h4><%= v.titel %></h4>
+                  <div class="event-meta"><%= [v.organisation, v.uhrzeit, v.ort].filter(Boolean).join(' · ') %></div>
+                  <% if (v.beschreibung) { %><p><%= v.beschreibung %></p><% } %>
+                  <% if (v.bildPath) { %><img src="<%= v.bildPath %>" alt=""><% } %>
+                </div>
+              </div>
+            <% }) %>
+          <% } %>
+          <% newsGruppen.forEach(gruppe => { %>
+            <div class="subsection-heading"><%= gruppe.rubrik %></div>
+            <% gruppe.items.forEach(n => { %>
+              <div class="news-item">
+                <% if (n.organisation) { %><div class="news-org-label"><%= n.organisation %></div><% } %>
+                <h4><%= n.titel %></h4>
+                <% if (n.inhalt) { %><p><%= n.inhalt %></p><% } %>
+                <% if (n.bildPath) { %><img src="<%= n.bildPath %>" alt=""><% } %>
+              </div>
+            <% }) %>
+          <% }) %>
+        </div>
+      <% } %>
+    <% }) %>
+
+    <% if (ausgabe.anzeigen && ausgabe.anzeigen.length) { %>
+      <h2 class="section-heading">Anzeigen &amp; Werbung</h2>
+      <div class="anzeigen-grid">
+        <% ausgabe.anzeigen.forEach(a => { %>
+          <div class="anzeige-box anzeige-<%= a.typ %>">
+            <% if (a.bildPath) { %><img src="<%= a.bildPath %>" alt=""><% } %>
+            <h4><%= a.titel %></h4>
+            <% if (a.text) { %><p><%= a.text %></p><% } %>
+            <% if (a.kontakt) { %><p class="anzeige-kontakt"><%= a.kontakt %></p><% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <footer class="site-footer">
+      <%= ausgabe.gemeindeName %> · Mitteilungsblatt Nr. <%= ausgabe.nummer %>/<%= ausgabe.jahr %>
+    </footer>
+  </div>
+</body>
+</html>

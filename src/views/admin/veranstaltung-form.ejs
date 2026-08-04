@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= v ? 'Veranstaltung bearbeiten' : 'Neue Veranstaltung' %> — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'veranstaltungen' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1><%= v ? 'Veranstaltung bearbeiten' : 'Neue Veranstaltung' %></h1></div>
+      </div>
+      <div class="card">
+        <form method="POST" action="<%= v ? ('/admin/veranstaltungen/' + v.id) : '/admin/veranstaltungen' %>" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="titel">Titel</label>
+            <input type="text" id="titel" name="titel" value="<%= v ? v.titel : '' %>" required>
+          </div>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <div class="form-group" style="flex:1; min-width:150px;">
+              <label for="datum">Datum</label>
+              <input type="date" id="datum" name="datum" value="<%= v ? v.datum : '' %>">
+            </div>
+            <div class="form-group" style="flex:1; min-width:120px;">
+              <label for="uhrzeit">Uhrzeit</label>
+              <input type="time" id="uhrzeit" name="uhrzeit" value="<%= v ? v.uhrzeit : '' %>">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ort">Ort</label>
+            <input type="text" id="ort" name="ort" value="<%= v ? v.ort : '' %>" placeholder="z. B. Dorfgemeinschaftshaus">
+          </div>
+          <div class="form-group">
+            <label for="organisation">Ausrichtender Verein / Organisation (optional)</label>
+            <input type="text" id="organisation" name="organisation" value="<%= v ? (v.organisation || '') : '' %>" placeholder="z. B. TV Creglingen, Freiwillige Feuerwehr">
+          </div>
+          <div class="form-group">
+            <label for="ortsteilId">Ortsteil</label>
+            <select id="ortsteilId" name="ortsteilId">
+              <option value="">Gemeindeweit (kein bestimmter Ortsteil)</option>
+              <% ortsteile.forEach(o => { %>
+                <option value="<%= o.id %>" <%= v && v.ortsteilId === o.id ? 'selected' : '' %>><%= o.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="beschreibung">Beschreibung</label>
+            <textarea id="beschreibung" name="beschreibung"><%= v ? v.beschreibung : '' %></textarea>
+          </div>
+          <div class="form-group">
+            <label for="bild">Bild (optional)</label>
+            <input type="file" id="bild" name="bild" accept="image/*">
+            <% if (v && v.bildPath) { %><img src="<%= v.bildPath %>" class="thumb"><% } %>
+          </div>
+          <div class="form-group checkbox-row">
+            <input type="checkbox" id="featured" name="featured" <%= v && v.featured ? 'checked' : '' %>>
+            <label for="featured" style="margin:0;">Auf der Titelseite als „wichtigste Veranstaltung“ hervorheben</label>
+          </div>
+          <button type="submit" class="btn btn-accent">Speichern</button>
+          <a href="/admin/veranstaltungen" class="btn btn-outline">Abbrechen</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

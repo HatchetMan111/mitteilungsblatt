@@ -1,0 +1,20 @@
+<div class="admin-sidebar">
+  <div class="admin-sidebar__brand">
+    Mitteilungsblatt
+    <span>Redaktion</span>
+  </div>
+  <ul class="admin-nav">
+    <li><a href="/admin" class="<%= active === 'dashboard' ? 'active' : '' %>">Übersicht</a></li>
+    <li><a href="/admin/ausgaben" class="<%= active === 'ausgaben' ? 'active' : '' %>">Ausgaben</a></li>
+    <li><a href="/admin/veranstaltungen" class="<%= active === 'veranstaltungen' ? 'active' : '' %>">Veranstaltungen</a></li>
+    <li><a href="/admin/news" class="<%= active === 'news' ? 'active' : '' %>">Meldungen</a></li>
+    <li><a href="/admin/anzeigen" class="<%= active === 'anzeigen' ? 'active' : '' %>">Anzeigen &amp; Werbung</a></li>
+    <li><a href="/admin/ortsteile" class="<%= active === 'ortsteile' ? 'active' : '' %>">Ortsteile</a></li>
+    <li><a href="/admin/standardrubriken" class="<%= active === 'standardrubriken' ? 'active' : '' %>">Standard-Infos</a></li>
+    <li><a href="/admin/einstellungen" class="<%= active === 'einstellungen' ? 'active' : '' %>">Einstellungen</a></li>
+    <li><a href="/" target="_blank">Öffentliche Seite ↗</a></li>
+  </ul>
+  <form method="POST" action="/admin/logout">
+    <button type="submit" class="btn btn-outline btn-sm" style="width:100%">Abmelden</button>
+  </form>
+</div>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Einstellungen — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'einstellungen' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Einstellungen</h1><p>Grunddaten der Gemeinde und des Mitteilungsblatts</p></div>
+      </div>
+
+      <% if (success === '1') { %><div class="alert alert-ok">Einstellungen gespeichert.</div><% } %>
+      <% if (success === 'passwort') { %><div class="alert alert-ok">Passwort geändert.</div><% } %>
+      <% if (error) { %><div class="alert alert-err"><%= error %></div><% } %>
+
+      <div class="card">
+        <h2>Gemeinde</h2>
+        <form method="POST" action="/admin/einstellungen" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="gemeindeName">Name der Gemeinde</label>
+            <input type="text" id="gemeindeName" name="gemeindeName" value="<%= settings.gemeindeName %>" required>
+          </div>
+          <div class="form-group">
+            <label for="untertitel">Untertitel</label>
+            <input type="text" id="untertitel" name="untertitel" value="<%= settings.untertitel %>" placeholder="z. B. Amtliches Mitteilungsblatt">
+          </div>
+          <div class="form-group">
+            <label for="erscheinungsjahr">Erscheinungsjahr (für die Ausgaben-Zählung)</label>
+            <input type="number" id="erscheinungsjahr" name="erscheinungsjahr" value="<%= settings.erscheinungsjahr %>">
+          </div>
+          <div class="form-group">
+            <label for="logo">Logo / Wappen (optional, klein)</label>
+            <input type="file" id="logo" name="logo" accept="image/*">
+            <% if (settings.logoPath) { %><img src="<%= settings.logoPath %>" class="thumb" alt="Aktuelles Logo"><% } %>
+          </div>
+          <div class="form-group">
+            <label for="titelbild">Standard-Titelbild (wird verwendet, falls für eine Ausgabe kein eigenes hochgeladen wird)</label>
+            <input type="file" id="titelbild" name="titelbild" accept="image/*">
+            <% if (settings.titelbildPath) { %><img src="<%= settings.titelbildPath %>" class="thumb" alt="Aktuelles Titelbild"><% } %>
+          </div>
+          <button type="submit" class="btn btn-accent">Speichern</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Passwort ändern</h2>
+        <form method="POST" action="/admin/einstellungen/passwort">
+          <div class="form-group">
+            <label for="neuesPasswort">Neues Passwort</label>
+            <input type="password" id="neuesPasswort" name="neuesPasswort" minlength="6" required>
+          </div>
+          <div class="form-group">
+            <label for="neuesPasswortWiederholen">Wiederholen</label>
+            <input type="password" id="neuesPasswortWiederholen" name="neuesPasswortWiederholen" minlength="6" required>
+          </div>
+          <button type="submit" class="btn btn-outline">Passwort ändern</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

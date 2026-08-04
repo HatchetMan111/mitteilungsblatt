@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= settings.gemeindeName %> — Mitteilungsblatt</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="site">
+    <header class="masthead">
+      <div class="masthead__gemeinde"><%= settings.gemeindeName %></div>
+      <% if (settings.untertitel) { %><div class="masthead__untertitel"><%= settings.untertitel %></div><% } %>
+    </header>
+    <div class="empty-state">
+      <h2>Die erste Ausgabe ist noch in Vorbereitung</h2>
+      <p>Schau bald wieder vorbei — hier erscheint das nächste Mitteilungsblatt, sobald die Redaktion es veröffentlicht hat.</p>
+    </div>
+    <footer class="site-footer"><%= settings.gemeindeName %></footer>
+  </div>
+</body>
+</html>

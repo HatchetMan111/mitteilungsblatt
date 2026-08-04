@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= a ? 'Anzeige bearbeiten' : 'Neue Anzeige' %> — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'anzeigen' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1><%= a ? 'Anzeige bearbeiten' : 'Neue Anzeige' %></h1></div>
+      </div>
+      <div class="card">
+        <form method="POST" action="<%= a ? ('/admin/anzeigen/' + a.id) : '/admin/anzeigen' %>" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="titel">Titel</label>
+            <input type="text" id="titel" name="titel" value="<%= a ? a.titel : '' %>" placeholder="z. B. Ackerfläche zu verkaufen" required>
+          </div>
+          <div class="form-group">
+            <label for="typ">Anzeigentyp</label>
+            <select id="typ" name="typ">
+              <option value="klein" <%= a && a.typ === 'klein' ? 'selected' : '' %>>Kleinanzeige (nur Text, schmaler Kasten)</option>
+              <option value="bild" <%= a && a.typ === 'bild' ? 'selected' : '' %>>Bild-Anzeige (großer Kasten mit Bild/Flyer)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="text">Anzeigentext</label>
+            <textarea id="text" name="text" rows="5"><%= a ? a.text : '' %></textarea>
+          </div>
+          <div class="form-group">
+            <label for="kontakt">Kontakt (Telefon/E-Mail, optional)</label>
+            <input type="text" id="kontakt" name="kontakt" value="<%= a ? (a.kontakt || '') : '' %>">
+          </div>
+          <div class="form-group">
+            <label for="bild">Bild / Flyer (optional, v. a. bei Bild-Anzeigen)</label>
+            <input type="file" id="bild" name="bild" accept="image/*">
+            <% if (a && a.bildPath) { %><img src="<%= a.bildPath %>" class="thumb"><% } %>
+          </div>
+          <div class="form-group">
+            <label for="ortsteilId">Ortsteil (optional, sonst gemeindeweit)</label>
+            <select id="ortsteilId" name="ortsteilId">
+              <option value="">Gemeindeweit</option>
+              <% ortsteile.forEach(o => { %>
+                <option value="<%= o.id %>" <%= a && a.ortsteilId === o.id ? 'selected' : '' %>><%= o.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-accent">Speichern</button>
+          <a href="/admin/anzeigen" class="btn btn-outline">Abbrechen</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

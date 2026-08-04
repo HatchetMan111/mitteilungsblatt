@@ -1,0 +1,8 @@
+@media print {
+  .site-nav, .no-print, .btn-download { display: none !important; }
+  body { background: #fff; }
+  .site { max-width: 100%; padding: 0; }
+  .event-card, .news-item { break-inside: avoid; }
+  .section-heading { break-after: avoid; }
+  a { color: inherit; text-decoration: none; }
+}

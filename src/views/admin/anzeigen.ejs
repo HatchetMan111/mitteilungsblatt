@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Anzeigen &amp; Werbung — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'anzeigen' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Anzeigen &amp; Werbung</h1><p>Kleinanzeigen und lokale Werbung, für die nächste Ausgabe vorgemerkt (<%= anzeigenListe.length %>)</p></div>
+        <a href="/admin/anzeigen/neu" class="btn btn-accent">+ Neue Anzeige</a>
+      </div>
+
+      <div class="card">
+        <p class="form-hint">Die Reihenfolge hier bestimmt die Reihenfolge im Anzeigenteil der Ausgabe (Platzierungswünsche lassen sich so nach Möglichkeit berücksichtigen).</p>
+        <% if (!anzeigenListe.length) { %>
+          <p class="form-hint">Noch keine Anzeigen für die nächste Ausgabe eingetragen.</p>
+        <% } else { %>
+        <table class="admin-table">
+          <thead><tr><th>Titel</th><th>Typ</th><th>Ortsteil</th><th></th></tr></thead>
+          <tbody>
+          <% anzeigenListe.forEach((a, idx) => { %>
+            <tr>
+              <td><%= a.titel %></td>
+              <td><span class="badge badge-slate"><%= a.typ === 'bild' ? 'Bild-Anzeige' : 'Kleinanzeige' %></span></td>
+              <td><% const ot = ortsteile.find(o => o.id === a.ortsteilId); %><%= ot ? ot.name : 'Gemeindeweit' %></td>
+              <td>
+                <div class="actions-row">
+                  <form method="POST" action="/admin/anzeigen/<%= a.id %>/move">
+                    <input type="hidden" name="direction" value="up">
+                    <button type="submit" class="btn btn-outline btn-sm" <%= idx === 0 ? 'disabled' : '' %>>↑</button>
+                  </form>
+                  <form method="POST" action="/admin/anzeigen/<%= a.id %>/move">
+                    <input type="hidden" name="direction" value="down">
+                    <button type="submit" class="btn btn-outline btn-sm" <%= idx === anzeigenListe.length - 1 ? 'disabled' : '' %>>↓</button>
+                  </form>
+                  <a href="/admin/anzeigen/<%= a.id %>/bearbeiten" class="btn btn-outline btn-sm">Bearbeiten</a>
+                  <form method="POST" action="/admin/anzeigen/<%= a.id %>/delete" onsubmit="return confirm('Anzeige wirklich löschen?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

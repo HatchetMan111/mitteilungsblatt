@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Veranstaltungen — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'veranstaltungen' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Veranstaltungen</h1><p>Für die nächste Ausgabe vorgemerkt (<%= veranstaltungen.length %>)</p></div>
+        <a href="/admin/veranstaltungen/neu" class="btn btn-accent">+ Neue Veranstaltung</a>
+      </div>
+
+      <div class="card">
+        <% if (!veranstaltungen.length) { %>
+          <p class="form-hint">Noch keine Veranstaltungen für die nächste Ausgabe eingetragen.</p>
+        <% } else { %>
+        <table class="admin-table">
+          <thead><tr><th>Titel</th><th>Datum</th><th>Ort</th><th>Verein/Org.</th><th>Ortsteil</th><th>Titelseite</th><th></th></tr></thead>
+          <tbody>
+          <% veranstaltungen.forEach(v => { %>
+            <tr>
+              <td><%= v.titel %></td>
+              <td><%= v.datum %> <%= v.uhrzeit || '' %></td>
+              <td><%= v.ort || '—' %></td>
+              <td><%= v.organisation || '—' %></td>
+              <td><% const ot = ortsteile.find(o => o.id === v.ortsteilId); %><%= ot ? ot.name : 'Gemeindeweit' %></td>
+              <td><% if (v.featured) { %><span class="badge badge-accent">Ja</span><% } else { %>—<% } %></td>
+              <td>
+                <div class="actions-row">
+                  <a href="/admin/veranstaltungen/<%= v.id %>/bearbeiten" class="btn btn-outline btn-sm">Bearbeiten</a>
+                  <form method="POST" action="/admin/veranstaltungen/<%= v.id %>/delete" onsubmit="return confirm('Veranstaltung wirklich löschen?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Archiv — <%= settings.gemeindeName %> Mitteilungsblatt</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="site">
+    <header class="masthead">
+      <div class="masthead__gemeinde"><%= settings.gemeindeName %></div>
+      <div class="masthead__untertitel">Archiv</div>
+      <nav class="site-nav"><a href="/">Aktuelle Ausgabe</a> · <a href="/archiv">Archiv</a></nav>
+    </header>
+
+    <% if (!ausgaben.length) { %>
+      <div class="empty-state"><h2>Noch keine Ausgaben im Archiv</h2></div>
+    <% } else { %>
+      <ul class="archiv-list">
+        <% ausgaben.forEach(a => { %>
+          <li>
+            <span class="nr">Nr. <%= a.nummer %>/<%= a.jahr %></span>
+            <a class="titel" href="/ausgabe/<%= a.id %>"><%= a.gemeindeName %></a>
+            <span class="datum"><%= formatDatum(a.datum) %></span>
+            <% if (a.pdfPath) { %><a href="<%= a.pdfPath %>" class="btn-download">PDF</a><% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+
+    <footer class="site-footer"><%= settings.gemeindeName %> · Mitteilungsblatt-Archiv</footer>
+  </div>
+</body>
+</html>

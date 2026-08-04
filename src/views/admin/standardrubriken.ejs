@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Standard-Infos — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'standardrubriken' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Standard-Infos</h1><p>Feste Angaben, die sich selten ändern (Notfallnummern, Öffnungszeiten, Impressum ...) — erscheinen automatisch in jeder Ausgabe.</p></div>
+      </div>
+
+      <% rubriken.forEach((r, idx) => { %>
+        <div class="card">
+          <form method="POST" action="/admin/standardrubriken/<%= r.id %>">
+            <div class="form-group">
+              <label>Titel</label>
+              <input type="text" name="titel" value="<%= r.titel %>">
+            </div>
+            <div class="form-group">
+              <label>Inhalt</label>
+              <textarea name="inhalt" rows="5"><%= r.inhalt %></textarea>
+              <p class="form-hint">Zeilenumbrüche werden übernommen.</p>
+            </div>
+            <div class="actions-row">
+              <button type="submit" class="btn btn-outline btn-sm">Speichern</button>
+            </div>
+          </form>
+          <div class="actions-row" style="margin-top:.6rem;">
+            <form method="POST" action="/admin/standardrubriken/<%= r.id %>/move">
+              <input type="hidden" name="direction" value="up">
+              <button type="submit" class="btn btn-outline btn-sm" <%= idx === 0 ? 'disabled' : '' %>>↑ Höher</button>
+            </form>
+            <form method="POST" action="/admin/standardrubriken/<%= r.id %>/move">
+              <input type="hidden" name="direction" value="down">
+              <button type="submit" class="btn btn-outline btn-sm" <%= idx === rubriken.length - 1 ? 'disabled' : '' %>>↓ Tiefer</button>
+            </form>
+            <form method="POST" action="/admin/standardrubriken/<%= r.id %>/delete" onsubmit="return confirm('Diese Rubrik wirklich löschen?');">
+              <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="card">
+        <h2>Neue Rubrik</h2>
+        <form method="POST" action="/admin/standardrubriken">
+          <div class="form-group">
+            <label for="titel">Titel</label>
+            <input type="text" id="titel" name="titel" placeholder="z. B. Bereitschaftsdienst der Apotheken" required>
+          </div>
+          <div class="form-group">
+            <label for="inhalt">Inhalt</label>
+            <textarea id="inhalt" name="inhalt" rows="5"></textarea>
+          </div>
+          <button type="submit" class="btn btn-accent">Hinzufügen</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Übersicht — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'dashboard' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div>
+          <h1><%= settings.gemeindeName %></h1>
+          <p>Redaktions-Übersicht</p>
+        </div>
+        <a href="/admin/ausgaben" class="btn btn-accent">Ausgabe erstellen</a>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="num"><%= ortsteile.length %></div><div class="label">Ortsteile</div></div>
+        <div class="stat-card"><div class="num"><%= veranstaltungen.length %></div><div class="label">Offene Veranstaltungen</div></div>
+        <div class="stat-card"><div class="num"><%= news.length %></div><div class="label">Offene Meldungen</div></div>
+        <div class="stat-card"><div class="num"><%= anzeigen.length %></div><div class="label">Offene Anzeigen</div></div>
+        <div class="stat-card"><div class="num"><%= ausgaben.length %></div><div class="label">Veröffentlichte Ausgaben</div></div>
+      </div>
+
+      <div class="card">
+        <h2>Nächste Ausgabe</h2>
+        <p>Aktuell sind <strong><%= veranstaltungen.length %> Veranstaltungen</strong> und <strong><%= news.length %> Meldungen</strong> für die nächste Ausgabe vorgemerkt.
+        Neue Inhalte fügst du bei „Veranstaltungen“ bzw. „Meldungen“ hinzu — sie erscheinen automatisch in der nächsten Ausgabe, sortiert nach Ortsteil.</p>
+        <div class="actions-row">
+          <a href="/admin/veranstaltungen/neu" class="btn btn-outline">+ Veranstaltung</a>
+          <a href="/admin/news/neu" class="btn btn-outline">+ Meldung</a>
+          <a href="/admin/anzeigen/neu" class="btn btn-outline">+ Anzeige</a>
+          <a href="/admin/ausgaben" class="btn btn-accent">Zur Ausgaben-Verwaltung</a>
+        </div>
+      </div>
+
+      <% if (letzteAusgabe) { %>
+      <div class="card">
+        <h2>Zuletzt veröffentlicht</h2>
+        <p>Ausgabe Nr. <%= letzteAusgabe.nummer %>/<%= letzteAusgabe.jahr %> vom <%= letzteAusgabe.datum %></p>
+        <div class="actions-row">
+          <a href="/ausgabe/<%= letzteAusgabe.id %>" target="_blank" class="btn btn-outline btn-sm">Ansehen</a>
+          <% if (letzteAusgabe.pdfPath) { %><a href="<%= letzteAusgabe.pdfPath %>" class="btn btn-outline btn-sm">PDF</a><% } %>
+        </div>
+      </div>
+      <% } else { %>
+      <div class="card">
+        <h2>Noch keine Ausgabe veröffentlicht</h2>
+        <p>Lege zunächst Ortsteile an, trage Veranstaltungen und Meldungen ein, und veröffentliche danach die erste Ausgabe.</p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>

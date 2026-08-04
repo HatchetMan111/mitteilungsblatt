@@ -1,0 +1,20 @@
+{
+  "name": "mitteilungsblatt",
+  "version": "1.0.0",
+  "description": "Gemeinde-Mitteilungsblatt: aggregiert News und Veranstaltungen aus mehreren Ortsteilen zu einem gemeinsamen Blatt (Web + PDF).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "multer": "^2.0.0",
+    "pdfkit": "^0.15.0",
+    "session-file-store": "^1.5.0"
+  }
+}

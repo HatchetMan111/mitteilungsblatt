@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Meldungen — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'news' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Meldungen</h1><p>Für die nächste Ausgabe vorgemerkt (<%= newsListe.length %>)</p></div>
+        <a href="/admin/news/neu" class="btn btn-accent">+ Neue Meldung</a>
+      </div>
+
+      <div class="card">
+        <% if (!newsListe.length) { %>
+          <p class="form-hint">Noch keine Meldungen für die nächste Ausgabe eingetragen.</p>
+        <% } else { %>
+        <table class="admin-table">
+          <thead><tr><th>Titel</th><th>Rubrik</th><th>Verein/Org.</th><th>Ortsteil</th><th></th></tr></thead>
+          <tbody>
+          <% newsListe.forEach(n => { %>
+            <tr>
+              <td><%= n.titel %></td>
+              <td><span class="badge badge-slate"><%= n.rubrik || 'Allgemein' %></span></td>
+              <td><%= n.organisation || '—' %></td>
+              <td><% const ot = ortsteile.find(o => o.id === n.ortsteilId); %><%= ot ? ot.name : 'Gemeindeweit' %></td>
+              <td>
+                <div class="actions-row">
+                  <a href="/admin/news/<%= n.id %>/bearbeiten" class="btn btn-outline btn-sm">Bearbeiten</a>
+                  <form method="POST" action="/admin/news/<%= n.id %>/delete" onsubmit="return confirm('Meldung wirklich löschen?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

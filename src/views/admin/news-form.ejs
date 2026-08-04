@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= n ? 'Meldung bearbeiten' : 'Neue Meldung' %> — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'news' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1><%= n ? 'Meldung bearbeiten' : 'Neue Meldung' %></h1></div>
+      </div>
+      <div class="card">
+        <form method="POST" action="<%= n ? ('/admin/news/' + n.id) : '/admin/news' %>" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="titel">Titel</label>
+            <input type="text" id="titel" name="titel" value="<%= n ? n.titel : '' %>" required>
+          </div>
+          <div class="form-group">
+            <label for="rubrik">Rubrik</label>
+            <select id="rubrik" name="rubrik">
+              <% rubriken.forEach(r => { %>
+                <option value="<%= r %>" <%= n && n.rubrik === r ? 'selected' : '' %>><%= r %></option>
+              <% }) %>
+            </select>
+            <p class="form-hint">Bestimmt, unter welcher Überschrift die Meldung in der Ausgabe erscheint.</p>
+          </div>
+          <div class="form-group">
+            <label for="organisation">Verein / Kirchengemeinde / Einrichtung (optional)</label>
+            <input type="text" id="organisation" name="organisation" value="<%= n ? (n.organisation || '') : '' %>" placeholder="z. B. Freiwillige Feuerwehr Creglingen">
+          </div>
+          <div class="form-group">
+            <label for="ortsteilId">Ortsteil</label>
+            <select id="ortsteilId" name="ortsteilId">
+              <option value="">Gemeindeweit (kein bestimmter Ortsteil)</option>
+              <% ortsteile.forEach(o => { %>
+                <option value="<%= o.id %>" <%= n && n.ortsteilId === o.id ? 'selected' : '' %>><%= o.name %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="inhalt">Text</label>
+            <textarea id="inhalt" name="inhalt" rows="8"><%= n ? n.inhalt : '' %></textarea>
+          </div>
+          <div class="form-group">
+            <label for="bild">Bild (optional)</label>
+            <input type="file" id="bild" name="bild" accept="image/*">
+            <% if (n && n.bildPath) { %><img src="<%= n.bildPath %>" class="thumb"><% } %>
+          </div>
+          <button type="submit" class="btn btn-accent">Speichern</button>
+          <a href="/admin/news" class="btn btn-outline">Abbrechen</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+src/node_modules/
+src/data/
+src/public/uploads/
+src/public/pdf/
+src/.env
+tools/app.tar.gz
+tools/app.b64
+*.log

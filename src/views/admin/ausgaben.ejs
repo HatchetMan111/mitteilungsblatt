@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Ausgaben — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'ausgaben' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Ausgaben</h1><p>Nächste Ausgabe zusammenstellen und veröffentlichen</p></div>
+      </div>
+
+      <div class="card">
+        <h2>Entwurf der nächsten Ausgabe — Nr. <%= settings.naechsteAusgabenNummer %>/<%= settings.erscheinungsjahr %></h2>
+        <p class="form-hint">Enthält alle aktuell vorgemerkten Veranstaltungen und Meldungen, sortiert nach Ortsteil. Titelbild kommt aus den Einstellungen.</p>
+
+        <div class="subsection-heading" style="margin-top:1.2rem;">Titelseite</div>
+        <p>
+          <%= entwurf.veranstaltungen.filter(v => v.featured).length %> hervorgehobene Veranstaltung(en) für die Titelseite.
+          <a href="/admin/veranstaltungen">Bearbeiten →</a>
+        </p>
+
+        <div class="subsection-heading">Gemeindeweit</div>
+        <p><%= entwurf.veranstaltungen.filter(v => !v.ortsteilId).length %> Veranstaltungen, <%= entwurf.news.filter(n => !n.ortsteilId).length %> Meldungen ohne bestimmten Ortsteil.</p>
+
+        <% entwurf.ortsteile.forEach(o => { %>
+          <% const ver = entwurf.veranstaltungen.filter(v => v.ortsteilId === o.id); %>
+          <% const nw = entwurf.news.filter(n => n.ortsteilId === o.id); %>
+          <div class="subsection-heading"><%= o.name %></div>
+          <p><%= ver.length %> Veranstaltungen, <%= nw.length %> Meldungen.</p>
+        <% }) %>
+
+        <div class="subsection-heading">Anzeigen &amp; Werbung</div>
+        <p><%= entwurf.anzeigen.length %> Anzeige(n) vorgemerkt. <a href="/admin/anzeigen">Bearbeiten →</a></p>
+
+        <div class="subsection-heading">Standard-Infos</div>
+        <p><%= entwurf.servicerubriken.length %> feste Rubrik(en) (Notfallnummern, Impressum ...) werden automatisch übernommen. <a href="/admin/standardrubriken">Bearbeiten →</a></p>
+
+        <% const gesamt = entwurf.veranstaltungen.length + entwurf.news.length; %>
+        <form method="POST" action="/admin/ausgaben" onsubmit="return confirm('Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt veröffentlichen? Alle vorgemerkten Inhalte werden danach archiviert.');" style="margin-top:1.2rem;">
+          <button type="submit" class="btn btn-accent" <%= gesamt === 0 ? 'disabled' : '' %>>Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt erstellen &amp; veröffentlichen</button>
+        </form>
+        <% if (gesamt === 0) { %><p class="form-hint">Noch keine Inhalte vorgemerkt — zuerst Veranstaltungen oder Meldungen anlegen.</p><% } %>
+      </div>
+
+      <div class="card">
+        <h2>Bisherige Ausgaben (<%= ausgaben.length %>)</h2>
+        <% if (!ausgaben.length) { %>
+          <p class="form-hint">Noch keine Ausgabe veröffentlicht.</p>
+        <% } else { %>
+        <table class="admin-table">
+          <thead><tr><th>Nr.</th><th>Datum</th><th></th></tr></thead>
+          <tbody>
+          <% ausgaben.forEach(a => { %>
+            <tr>
+              <td>Nr. <%= a.nummer %>/<%= a.jahr %></td>
+              <td><%= a.datum %></td>
+              <td>
+                <div class="actions-row">
+                  <a href="/ausgabe/<%= a.id %>" target="_blank" class="btn btn-outline btn-sm">Ansehen</a>
+                  <% if (a.pdfPath) { %><a href="<%= a.pdfPath %>" class="btn btn-outline btn-sm">PDF</a><% } %>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

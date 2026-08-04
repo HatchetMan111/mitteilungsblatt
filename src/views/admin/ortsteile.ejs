@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Ortsteile — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'ortsteile' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Ortsteile</h1><p>Dörfer / Stadtteile, die eigene Rubriken im Mitteilungsblatt bekommen</p></div>
+      </div>
+
+      <div class="card">
+        <h2>Neuer Ortsteil</h2>
+        <form method="POST" action="/admin/ortsteile">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="z. B. Unterdorf" required>
+          </div>
+          <div class="form-group">
+            <label for="beschreibung">Kurzbeschreibung (optional)</label>
+            <input type="text" id="beschreibung" name="beschreibung" placeholder="z. B. Ortsvorsteher, Besonderheiten…">
+          </div>
+          <button type="submit" class="btn btn-accent">Hinzufügen</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Vorhandene Ortsteile (<%= ortsteile.length %>)</h2>
+        <% if (!ortsteile.length) { %>
+          <p class="form-hint">Noch keine Ortsteile angelegt.</p>
+        <% } %>
+        <% ortsteile.forEach((o, idx) => { %>
+          <div style="border-bottom:1px solid var(--rule); padding: .9rem 0;">
+            <form method="POST" action="/admin/ortsteile/<%= o.id %>" style="display:flex; gap:.6rem; align-items:flex-start; flex-wrap:wrap;">
+              <div style="flex:1; min-width:200px;">
+                <input type="text" name="name" value="<%= o.name %>" style="margin-bottom:.4rem;">
+                <input type="text" name="beschreibung" value="<%= o.beschreibung || '' %>" placeholder="Kurzbeschreibung">
+              </div>
+              <div class="actions-row" style="align-self:center;">
+                <button type="submit" class="btn btn-outline btn-sm">Speichern</button>
+              </div>
+            </form>
+            <div class="actions-row" style="margin-top:.5rem;">
+              <form method="POST" action="/admin/ortsteile/<%= o.id %>/move">
+                <input type="hidden" name="direction" value="up">
+                <button type="submit" class="btn btn-outline btn-sm" <%= idx === 0 ? 'disabled' : '' %>>↑ Höher</button>
+              </form>
+              <form method="POST" action="/admin/ortsteile/<%= o.id %>/move">
+                <input type="hidden" name="direction" value="down">
+                <button type="submit" class="btn btn-outline btn-sm" <%= idx === ortsteile.length - 1 ? 'disabled' : '' %>>↓ Tiefer</button>
+              </form>
+              <form method="POST" action="/admin/ortsteile/<%= o.id %>/delete" onsubmit="return confirm('Ortsteil wirklich löschen? Zugeordnete Inhalte werden auf gemeindeweit umgestellt.');">
+                <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+              </form>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

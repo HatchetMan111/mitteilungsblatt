@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Anmelden — <%= gemeindeName %> Mitteilungsblatt</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="login-shell">
+    <div class="login-card">
+      <h1>Redaktion</h1>
+      <p class="sub"><%= gemeindeName %> · Mitteilungsblatt</p>
+      <% if (error) { %><div class="alert alert-err"><%= error %></div><% } %>
+      <form method="POST" action="/admin/login">
+        <div class="form-group">
+          <label for="username">Benutzername</label>
+          <input type="text" id="username" name="username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label for="password">Passwort</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-accent" style="width:100%">Anmelden</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
