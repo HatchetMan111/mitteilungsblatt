@@ -123,6 +123,33 @@ Heimnetz empfiehlt sich zusätzlich ein Reverse-Proxy (z. B. nginx) oder ein
 lokaler DNS-Eintrag — das übernimmt dieses Skript bewusst nicht, damit es zu
 jeder vorhandenen Netzwerkstruktur passt.
 
+## Sicherheit
+
+- **HTTPS**: Die App selbst spricht nur HTTP. Sobald sie aus dem Internet
+  (nicht nur dem Heimnetz) erreichbar sein soll, unbedingt einen
+  Reverse-Proxy mit TLS davorschalten. Fertige Beispiel-Konfigurationen für
+  Caddy (automatisches Let's-Encrypt-Zertifikat, empfohlen für den einfachen
+  Einstieg) und nginx liegen im Ordner `deploy/` des Repos.
+- **Brute-Force-Schutz**: Der Login ist auf 8 Versuche pro 15 Minuten und
+  IP-Adresse begrenzt.
+- **Sicherheits-Header**: Die App setzt Standard-Header (u. a. gegen
+  Clickjacking) über `helmet`. Das Session-Cookie ist `HttpOnly` und
+  `SameSite=Lax` gesetzt, was die meisten CSRF-Angriffe bereits browserseitig
+  blockiert.
+- **Automatisches Backup**: Der Installer richtet einen täglichen Backup-Job
+  (3 Uhr nachts, 14 Tage Aufbewahrung) ein, der `data/`, `public/uploads/`
+  und `public/pdf/` als `.tar.gz` unter `/opt/mitteilungsblatt/backups/`
+  sichert. Zusätzlich empfiehlt sich ein reguläres Proxmox-Backup des
+  gesamten Containers (Datacenter → Backup) für den Fall eines kompletten
+  Datenverlusts.
+
+**Backup wiederherstellen** (Beispiel):
+```bash
+pct exec <CTID> -- systemctl stop mitteilungsblatt
+pct exec <CTID> -- bash -c "cd /opt/mitteilungsblatt && tar -xzf backups/backup-JJJJ-MM-TT_HHMMSS.tar.gz"
+pct exec <CTID> -- systemctl start mitteilungsblatt
+```
+
 ## Grenzen (Stand jetzt)
 
 - Ein einzelner Admin-Zugang (keine separaten Konten je Ortsteil).

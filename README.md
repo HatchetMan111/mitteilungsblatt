@@ -14,12 +14,18 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/HatchetMan111/mitteilung
 Details, Optionen (`AUTO=1`) und die Bedienung der App nach der Installation:
 siehe [`src/README.md`](src/README.md).
 
+**Sicherheit vor dem produktiven Einsatz:** Standard-Login `admin`/`admin`
+gleich ändern, und für eine aus dem Internet erreichbare Adresse unbedingt
+HTTPS vorschalten — Beispiel-Konfigurationen dafür liegen in [`deploy/`](deploy/).
+Details siehe Abschnitt „Sicherheit“ in [`src/README.md`](src/README.md).
+
 ## Repo-Struktur
 
 ```
 install-mitteilungsblatt.sh   ← fertiges Installer-Skript (enthält den App-Code eingebettet)
 src/                          ← App-Quellcode (Node.js/Express)
 tools/build.sh                ← baut install-mitteilungsblatt.sh neu aus src/
+deploy/                       ← Beispiel-Konfigurationen für HTTPS-Reverse-Proxy (Caddy/nginx)
 ```
 
 ## Nach Änderungen am Code

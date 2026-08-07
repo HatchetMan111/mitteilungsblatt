@@ -1,0 +1,14 @@
+# Beispiel-Konfiguration für Caddy als Reverse-Proxy mit automatischem,
+# kostenlosem HTTPS-Zertifikat (Let's Encrypt) — die einfachste Option.
+#
+# Installation (im LXC-Container oder auf einem separaten Proxy-Host):
+#   apt install -y caddy
+#   cp Caddyfile.example /etc/caddy/Caddyfile   (Domain unten anpassen!)
+#   systemctl reload caddy
+#
+# Voraussetzung: Die Domain muss per DNS (A-Record) auf die Server-IP zeigen,
+# und Port 80 + 443 müssen von außen erreichbar sein (Router-Weiterleitung).
+
+mitteilungsblatt.beispiel-gemeinde.de {
+    reverse_proxy localhost:3000
+}

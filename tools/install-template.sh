@@ -188,6 +188,31 @@ WantedBy=multi-user.target
 EOF
 fi
 
+# ---------- Automatisches taegliches Backup ----------
+pct exec "$CTID" -- bash -c "chmod +x /opt/mitteilungsblatt/scripts/backup.sh 2>/dev/null || true"
+pct exec "$CTID" -- bash -c "cat > /etc/systemd/system/${APP_NAME}-backup.service" <<EOF
+[Unit]
+Description=Mitteilungsblatt Backup
+
+[Service]
+Type=oneshot
+ExecStart=/opt/mitteilungsblatt/scripts/backup.sh
+User=mitteilungsblatt
+EOF
+pct exec "$CTID" -- bash -c "cat > /etc/systemd/system/${APP_NAME}-backup.timer" <<EOF
+[Unit]
+Description=Taegliches Mitteilungsblatt-Backup
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target
+EOF
+pct exec "$CTID" -- bash -c "systemctl daemon-reload && systemctl enable --now ${APP_NAME}-backup.timer"
+
 pct exec "$CTID" -- bash -c "chown -R mitteilungsblatt:mitteilungsblatt /opt/mitteilungsblatt"
 pct exec "$CTID" -- bash -c "systemctl daemon-reload && systemctl enable --now ${APP_NAME}"
 sleep 2
@@ -218,4 +243,6 @@ echo -e "  besonders falls die Seite außerhalb des Heimnetzes erreichbar ist."
 echo -e "\n  Container-ID      : $CTID"
 echo -e "  Dienst verwalten  : pct exec $CTID -- systemctl {status|restart} ${APP_NAME}"
 echo -e "  Update einspielen : dieses Skript erneut mit derselben Container-ID ausführen"
+echo -e "  Automat. Backup   : täglich 3 Uhr, 14 Tage aufbewahrt, unter"
+echo -e "                      /opt/mitteilungsblatt/backups/ im Container"
 echo ""

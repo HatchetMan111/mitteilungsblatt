@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
 const FileStore = require('session-file-store')(session);
 
 const config = require('./config');
@@ -12,6 +13,16 @@ const { attachLocals } = require('./lib/auth');
 });
 
 const app = express();
+
+// Falls die App hinter einem Reverse-Proxy (nginx/Caddy fuer HTTPS) laeuft,
+// sorgt das dafuer, dass req.ip die echte Client-IP liefert (wichtig fuer
+// das Rate-Limiting beim Login) statt der Proxy-IP.
+app.set('trust proxy', 1);
+
+// Sicherheits-Header (CSP bewusst deaktiviert, da einige Templates noch
+// inline style-Attribute nutzen; die uebrigen Header - u.a. X-Frame-Options
+// gegen Clickjacking, X-Content-Type-Options - greifen trotzdem).
+app.use(helmet({ contentSecurityPolicy: false }));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -25,7 +36,11 @@ app.use(session({
   secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 12 } // 12h
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 12, // 12h
+    sameSite: 'lax', // blockt die meisten CSRF-Angriffe bereits browserseitig
+    httpOnly: true
+  }
 }));
 
 app.use(attachLocals);
