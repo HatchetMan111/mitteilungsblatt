@@ -133,6 +133,20 @@
       </div>
     <% } %>
 
+    <% if (ausgabe.sponsoren && ausgabe.sponsoren.length) { %>
+      <h2 class="section-heading">Diese Ausgabe wird unterstützt von</h2>
+      <div class="sponsoren-grid">
+        <% ausgabe.sponsoren.forEach(s => { %>
+          <div class="sponsor-card">
+            <% if (s.logoPath) { %><img src="<%= s.logoPath %>" alt="Logo <%= s.name %>"><% } %>
+            <div class="sponsor-name"><%= s.name %></div>
+            <% if (s.beschreibung) { %><div class="sponsor-beschreibung"><%= s.beschreibung %></div><% } %>
+            <% if (s.website) { %><a class="sponsor-website" href="<%= /^https?:\/\//.test(s.website) ? s.website : 'https://' + s.website %>" target="_blank" rel="noopener"><%= s.website %></a><% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
     <footer class="site-footer">
       <%= ausgabe.gemeindeName %> · Mitteilungsblatt Nr. <%= ausgabe.nummer %>/<%= ausgabe.jahr %>
     </footer>

@@ -22,8 +22,17 @@ Meldungen und Terminen — als Web-Ansicht und als druckfertiges PDF.
   Absender-Label über der Meldung bzw. in den Veranstaltungsdetails.
 - **Anzeigen & Werbung**: eigener Bereich für Kleinanzeigen (nur Text) und
   größere Bild-Anzeigen/Flyer, inkl. Kontaktangabe und manueller Reihenfolge
-  (für Platzierungswünsche). Erscheinen als eigener Anzeigenteil in Web +
-  PDF und werden wie Veranstaltungen/Meldungen pro Ausgabe archiviert.
+  (für Platzierungswünsche). Im PDF werden Anzeigen automatisch als
+  Lückenfüller zwischen die redaktionellen Seiten verteilt (wie in einer
+  echten Zeitung) — nur was nicht dazwischen passt, bekommt am Ende eine
+  eigene Seite „Weitere Anzeigen". Auf der Web-Seite erscheinen alle
+  Anzeigen gesammelt in einem eigenen Abschnitt. Werden wie
+  Veranstaltungen/Meldungen pro Ausgabe archiviert.
+- **Sponsoren**: ständige Liste (kein Pool wie Anzeigen), erscheint
+  automatisch am Ende jeder Ausgabe als Dankeschön-Seite „Diese Ausgabe
+  wird unterstützt von" — mit Logo, Name, optionaler Website und
+  Kurzbeschreibung, sowohl im PDF (eigene Abschlussseite) als auch auf der
+  Web-Seite.
 - **Standard-Infos**: feste Rubriken, die sich selten ändern (Notfallnummern,
   Störungsnummern Strom/Gas/Wasser, Öffnungszeiten Rathaus, Impressum —
   weitere frei anlegbar). Werden einmal gepflegt und automatisch in jede

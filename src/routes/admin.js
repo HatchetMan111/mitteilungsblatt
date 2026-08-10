@@ -17,10 +17,11 @@ router.get('/', (req, res) => {
   const veranstaltungen = db.listVeranstaltungen({ onlyAktuell: true });
   const news = db.listNews({ onlyAktuell: true });
   const anzeigen = db.listAnzeigen({ onlyAktuell: true });
+  const sponsoren = db.listSponsoren();
   const ausgaben = db.listAusgaben();
   res.render('admin/dashboard', {
     settings: db.getSettings(),
-    ortsteile, veranstaltungen, news, anzeigen, ausgaben,
+    ortsteile, veranstaltungen, news, anzeigen, sponsoren, ausgaben,
     letzteAusgabe: ausgaben[0] || null
   });
 });
@@ -275,6 +276,52 @@ router.post('/standardrubriken/:id/move', (req, res) => {
   res.redirect('/admin/standardrubriken');
 });
 
+// ---------- Sponsoren ----------
+router.get('/sponsoren', (req, res) => {
+  res.render('admin/sponsoren', { sponsoren: db.listSponsoren() });
+});
+
+router.get('/sponsoren/neu', (req, res) => {
+  res.render('admin/sponsor-form', { s: null });
+});
+
+router.post('/sponsoren', upload.single('logo'), (req, res) => {
+  db.createSponsor({
+    name: req.body.name,
+    website: req.body.website,
+    beschreibung: req.body.beschreibung,
+    logoPath: publicPath(req.file)
+  });
+  res.redirect('/admin/sponsoren');
+});
+
+router.get('/sponsoren/:id/bearbeiten', (req, res) => {
+  const s = db.getSponsor(req.params.id);
+  if (!s) return res.redirect('/admin/sponsoren');
+  res.render('admin/sponsor-form', { s });
+});
+
+router.post('/sponsoren/:id', upload.single('logo'), (req, res) => {
+  const patch = {
+    name: req.body.name,
+    website: req.body.website,
+    beschreibung: req.body.beschreibung
+  };
+  if (req.file) patch.logoPath = publicPath(req.file);
+  db.updateSponsor(req.params.id, patch);
+  res.redirect('/admin/sponsoren');
+});
+
+router.post('/sponsoren/:id/delete', (req, res) => {
+  db.deleteSponsor(req.params.id);
+  res.redirect('/admin/sponsoren');
+});
+
+router.post('/sponsoren/:id/move', (req, res) => {
+  db.moveSponsor(req.params.id, req.body.direction);
+  res.redirect('/admin/sponsoren');
+});
+
 // ---------- Ausgaben ----------
 router.get('/ausgaben', (req, res) => {
   res.render('admin/ausgaben', {
@@ -285,7 +332,8 @@ router.get('/ausgaben', (req, res) => {
       news: db.listNews({ onlyAktuell: true }),
       anzeigen: db.listAnzeigen({ onlyAktuell: true }),
       ortsteile: db.listOrtsteile(),
-      servicerubriken: db.listServicerubriken()
+      servicerubriken: db.listServicerubriken(),
+      sponsoren: db.listSponsoren()
     }
   });
 });

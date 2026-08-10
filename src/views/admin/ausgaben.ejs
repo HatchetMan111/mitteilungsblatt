@@ -38,6 +38,9 @@
         <div class="subsection-heading">Standard-Infos</div>
         <p><%= entwurf.servicerubriken.length %> feste Rubrik(en) (Notfallnummern, Impressum ...) werden automatisch übernommen. <a href="/admin/standardrubriken">Bearbeiten →</a></p>
 
+        <div class="subsection-heading">Sponsoren</div>
+        <p><%= entwurf.sponsoren.length %> Sponsor(en) werden automatisch als Dankeschön-Seite übernommen. <a href="/admin/sponsoren">Bearbeiten →</a></p>
+
         <% const gesamt = entwurf.veranstaltungen.length + entwurf.news.length; %>
         <form method="POST" action="/admin/ausgaben" onsubmit="return confirm('Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt veröffentlichen? Alle vorgemerkten Inhalte werden danach archiviert.');" style="margin-top:1.2rem;">
           <button type="submit" class="btn btn-accent" <%= gesamt === 0 ? 'disabled' : '' %>>Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt erstellen &amp; veröffentlichen</button>

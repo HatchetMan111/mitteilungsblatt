@@ -108,6 +108,9 @@ function defaultDb() {
         order: 4
       }
     ],
+    // Sponsoren des Mitteilungsblatts: staendige Liste (kein Pool wie
+    // Anzeigen), erscheint automatisch in jeder Ausgabe als Dankeschoen-Seite.
+    sponsoren: [],
     ausgaben: []
   };
 }
@@ -117,6 +120,7 @@ function migrate(db) {
   // die neuen Felder automatisch ergänzt, ohne bestehende Daten zu verlieren.
   if (!Array.isArray(db.anzeigen)) db.anzeigen = [];
   if (!Array.isArray(db.servicerubriken)) db.servicerubriken = [];
+  if (!Array.isArray(db.sponsoren)) db.sponsoren = [];
   (db.news || []).forEach(n => {
     if (typeof n.rubrik !== 'string') n.rubrik = 'Allgemein';
     if (typeof n.organisation !== 'string') n.organisation = '';
@@ -387,6 +391,56 @@ function moveServicerubrik(rid, direction) {
   persist();
 }
 
+// ---------- Sponsoren (staendige Liste, erscheint in jeder Ausgabe) ----------
+function listSponsoren() {
+  return load().sponsoren.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+}
+function getSponsor(sid) {
+  return load().sponsoren.find(s => s.id === sid) || null;
+}
+function createSponsor(data) {
+  const db = load();
+  const maxOrder = db.sponsoren.reduce((m, s) => Math.max(m, s.order || 0), 0);
+  const s = {
+    id: id(),
+    name: data.name,
+    website: data.website || '',
+    beschreibung: data.beschreibung || '',
+    logoPath: data.logoPath || null,
+    order: maxOrder + 1
+  };
+  db.sponsoren.push(s);
+  persist();
+  return s;
+}
+function updateSponsor(sid, data) {
+  const db = load();
+  const s = db.sponsoren.find(x => x.id === sid);
+  if (!s) return null;
+  Object.assign(s, data);
+  persist();
+  return s;
+}
+function deleteSponsor(sid) {
+  const db = load();
+  db.sponsoren = db.sponsoren.filter(s => s.id !== sid);
+  persist();
+}
+function moveSponsor(sid, direction) {
+  const db = load();
+  const list = listSponsoren();
+  const idx = list.findIndex(s => s.id === sid);
+  if (idx === -1) return;
+  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
+  if (swapWith < 0 || swapWith >= list.length) return;
+  const s1 = db.sponsoren.find(x => x.id === list[idx].id);
+  const s2 = db.sponsoren.find(x => x.id === list[swapWith].id);
+  const tmp = s1.order;
+  s1.order = s2.order;
+  s2.order = tmp;
+  persist();
+}
+
 // ---------- Ausgaben ----------
 function listAusgaben() {
   return load().ausgaben.slice().sort((a, b) => b.nummer - a.nummer);
@@ -427,6 +481,7 @@ function createAndPublishAusgabe({ titelbildPath } = {}) {
     featuredVeranstaltungen: veranstaltungen.filter(v => v.featured).map(v => ({ ...v })),
     // Feste Service-Infos (Notfallnummern, Impressum ...) zum Zeitpunkt der Veroeffentlichung
     servicerubriken: listServicerubriken().map(r => ({ ...r })),
+    sponsoren: listSponsoren().map(s => ({ ...s })),
     // Alle Veranstaltungen/News gruppiert je Ortsteil (null = gemeindeweit)
     ortsteile: ortsteile.map(o => ({
       id: o.id,
@@ -486,6 +541,7 @@ module.exports = {
   listNews, getNews, createNews, updateNews, deleteNews,
   listAnzeigen, getAnzeige, createAnzeige, updateAnzeige, deleteAnzeige, moveAnzeige,
   listServicerubriken, getServicerubrik, createServicerubrik, updateServicerubrik, deleteServicerubrik, moveServicerubrik,
+  listSponsoren, getSponsor, createSponsor, updateSponsor, deleteSponsor, moveSponsor,
   listAusgaben, getAusgabe, getLatestPublishedAusgabe, createAndPublishAusgabe, setAusgabePdfPath,
   groupNewsByRubrik
 };

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title><%= s ? 'Sponsor bearbeiten' : 'Neuer Sponsor' %> — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'sponsoren' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1><%= s ? 'Sponsor bearbeiten' : 'Neuer Sponsor' %></h1></div>
+      </div>
+      <div class="card">
+        <form method="POST" action="<%= s ? ('/admin/sponsoren/' + s.id) : '/admin/sponsoren' %>" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" value="<%= s ? s.name : '' %>" placeholder="z. B. Getränkemarkt Talblick" required>
+          </div>
+          <div class="form-group">
+            <label for="website">Website (optional)</label>
+            <input type="text" id="website" name="website" value="<%= s ? (s.website || '') : '' %>" placeholder="z. B. www.beispiel.de">
+          </div>
+          <div class="form-group">
+            <label for="beschreibung">Kurzer Dank-/Beschreibungstext (optional)</label>
+            <input type="text" id="beschreibung" name="beschreibung" value="<%= s ? (s.beschreibung || '') : '' %>" placeholder="z. B. Hauptsponsor des Dorffests">
+          </div>
+          <div class="form-group">
+            <label for="logo">Logo (optional)</label>
+            <input type="file" id="logo" name="logo" accept="image/*">
+            <% if (s && s.logoPath) { %><img src="<%= s.logoPath %>" class="thumb"><% } %>
+          </div>
+          <button type="submit" class="btn btn-accent">Speichern</button>
+          <a href="/admin/sponsoren" class="btn btn-outline">Abbrechen</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

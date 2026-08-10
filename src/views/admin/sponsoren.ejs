@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <title>Sponsoren — Redaktion</title>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="admin-shell">
+    <%- include('../partials/admin-nav', { active: 'sponsoren' }) %>
+    <div class="admin-main">
+      <div class="admin-header">
+        <div><h1>Sponsoren</h1><p>Ständige Liste — erscheint automatisch am Ende jeder Ausgabe als Dankeschön-Seite, sowohl im PDF als auch auf der Web-Seite.</p></div>
+        <a href="/admin/sponsoren/neu" class="btn btn-accent">+ Neuer Sponsor</a>
+      </div>
+
+      <div class="card">
+        <% if (!sponsoren.length) { %>
+          <p class="form-hint">Noch keine Sponsoren eingetragen.</p>
+        <% } else { %>
+        <table class="admin-table">
+          <thead><tr><th></th><th>Name</th><th>Website</th><th></th></tr></thead>
+          <tbody>
+          <% sponsoren.forEach((s, idx) => { %>
+            <tr>
+              <td><% if (s.logoPath) { %><img src="<%= s.logoPath %>" style="height:32px;width:auto;"><% } %></td>
+              <td><%= s.name %></td>
+              <td><%= s.website || '—' %></td>
+              <td>
+                <div class="actions-row">
+                  <form method="POST" action="/admin/sponsoren/<%= s.id %>/move">
+                    <input type="hidden" name="direction" value="up">
+                    <button type="submit" class="btn btn-outline btn-sm" <%= idx === 0 ? 'disabled' : '' %>>↑</button>
+                  </form>
+                  <form method="POST" action="/admin/sponsoren/<%= s.id %>/move">
+                    <input type="hidden" name="direction" value="down">
+                    <button type="submit" class="btn btn-outline btn-sm" <%= idx === sponsoren.length - 1 ? 'disabled' : '' %>>↓</button>
+                  </form>
+                  <a href="/admin/sponsoren/<%= s.id %>/bearbeiten" class="btn btn-outline btn-sm">Bearbeiten</a>
+                  <form method="POST" action="/admin/sponsoren/<%= s.id %>/delete" onsubmit="return confirm('Sponsor wirklich löschen?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Löschen</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+          </tbody>
+        </table>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -190,6 +190,19 @@ h1, h2, h3, h4 { font-family: var(--font-display); color: var(--ink); margin: 0 
 .anzeige-bild { grid-column: span 2; border-style: solid; border-width: 2px; }
 @media (max-width: 600px) { .anzeige-bild { grid-column: span 1; } }
 
+.sponsoren-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  margin: 1rem 0 2.5rem;
+  text-align: center;
+}
+.sponsor-card { padding: .5rem; }
+.sponsor-card img { max-height: 60px; width: auto; margin: 0 auto .6rem; object-fit: contain; }
+.sponsor-name { font-family: var(--font-body); font-weight: 700; color: var(--ink); font-size: .95rem; }
+.sponsor-beschreibung { color: var(--muted); font-size: .8rem; font-style: italic; margin-top: .15rem; }
+.sponsor-website { display: block; color: var(--accent); font-size: .8rem; margin-top: .25rem; }
+
 .ortsteil-block { margin-top: 1rem; }
 .ortsteil-label {
   display: inline-block;
