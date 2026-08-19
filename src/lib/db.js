@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { DATA_DIR, DB_FILE } = require('../config');
+const { deleteUploadedFile } = require('./upload');
 
 // Feste Rubriken für Meldungen, in der Reihenfolge, in der sie in der
 // veröffentlichten Ausgabe erscheinen (angelehnt an klassische Mitteilungsblätter).
@@ -164,6 +165,13 @@ function getSettings() {
 }
 function updateSettings(patch) {
   const db = load();
+  // Wird ein Logo/Titelbild ersetzt, die zuvor hochgeladene alte Datei loeschen
+  if (patch.logoPath && db.settings.logoPath && patch.logoPath !== db.settings.logoPath) {
+    deleteUploadedFile(db.settings.logoPath);
+  }
+  if (patch.titelbildPath && db.settings.titelbildPath && patch.titelbildPath !== db.settings.titelbildPath) {
+    deleteUploadedFile(db.settings.titelbildPath);
+  }
   db.settings = { ...db.settings, ...patch };
   persist();
   return db.settings;
@@ -242,13 +250,18 @@ function updateVeranstaltung(vid, data) {
   const db = load();
   const v = db.veranstaltungen.find(x => x.id === vid);
   if (!v) return null;
+  if (data.bildPath && v.bildPath && data.bildPath !== v.bildPath) {
+    deleteUploadedFile(v.bildPath);
+  }
   Object.assign(v, data);
   persist();
   return v;
 }
 function deleteVeranstaltung(vid) {
   const db = load();
-  db.veranstaltungen = db.veranstaltungen.filter(v => v.id !== vid);
+  const v = db.veranstaltungen.find(x => x.id === vid);
+  if (v && v.bildPath) deleteUploadedFile(v.bildPath);
+  db.veranstaltungen = db.veranstaltungen.filter(x => x.id !== vid);
   persist();
 }
 
@@ -282,13 +295,18 @@ function updateNews(nid, data) {
   const db = load();
   const n = db.news.find(x => x.id === nid);
   if (!n) return null;
+  if (data.bildPath && n.bildPath && data.bildPath !== n.bildPath) {
+    deleteUploadedFile(n.bildPath);
+  }
   Object.assign(n, data);
   persist();
   return n;
 }
 function deleteNews(nid) {
   const db = load();
-  db.news = db.news.filter(n => n.id !== nid);
+  const n = db.news.find(x => x.id === nid);
+  if (n && n.bildPath) deleteUploadedFile(n.bildPath);
+  db.news = db.news.filter(x => x.id !== nid);
   persist();
 }
 
@@ -324,13 +342,18 @@ function updateAnzeige(aid, data) {
   const db = load();
   const a = db.anzeigen.find(x => x.id === aid);
   if (!a) return null;
+  if (data.bildPath && a.bildPath && data.bildPath !== a.bildPath) {
+    deleteUploadedFile(a.bildPath);
+  }
   Object.assign(a, data);
   persist();
   return a;
 }
 function deleteAnzeige(aid) {
   const db = load();
-  db.anzeigen = db.anzeigen.filter(a => a.id !== aid);
+  const a = db.anzeigen.find(x => x.id === aid);
+  if (a && a.bildPath) deleteUploadedFile(a.bildPath);
+  db.anzeigen = db.anzeigen.filter(x => x.id !== aid);
   persist();
 }
 function moveAnzeige(aid, direction) {
@@ -417,13 +440,18 @@ function updateSponsor(sid, data) {
   const db = load();
   const s = db.sponsoren.find(x => x.id === sid);
   if (!s) return null;
+  if (data.logoPath && s.logoPath && data.logoPath !== s.logoPath) {
+    deleteUploadedFile(s.logoPath);
+  }
   Object.assign(s, data);
   persist();
   return s;
 }
 function deleteSponsor(sid) {
   const db = load();
-  db.sponsoren = db.sponsoren.filter(s => s.id !== sid);
+  const s = db.sponsoren.find(x => x.id === sid);
+  if (s && s.logoPath) deleteUploadedFile(s.logoPath);
+  db.sponsoren = db.sponsoren.filter(x => x.id !== sid);
   persist();
 }
 function moveSponsor(sid, direction) {

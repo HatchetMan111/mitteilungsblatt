@@ -3,13 +3,19 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../lib/db');
 const { requireAuth } = require('../lib/auth');
-const { upload, publicPath } = require('../lib/upload');
+const { upload, publicPath, deleteUploadedFile } = require('../lib/upload');
 const { generateAusgabePdf } = require('../lib/pdf');
 const path = require('path');
 const fs = require('fs');
 const { PDF_DIR } = require('../config');
 
 router.use(requireAuth);
+
+// Einfache serverseitige Pflichtfeld-Pruefung (das HTML-'required'-Attribut
+// laesst sich umgehen, z.B. bei einem direkten POST ohne Formular).
+function hasText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
 
 // ---------- Dashboard ----------
 router.get('/', (req, res) => {
@@ -48,12 +54,16 @@ router.post('/einstellungen', upload.fields([{ name: 'logo', maxCount: 1 }, { na
 });
 
 router.post('/einstellungen/passwort', (req, res) => {
-  const { neuesPasswort, neuesPasswortWiederholen } = req.body;
+  const { aktuellesPasswort, neuesPasswort, neuesPasswortWiederholen } = req.body;
+  const settings = db.getSettings();
+  if (!aktuellesPasswort || !bcrypt.compareSync(aktuellesPasswort, settings.adminPasswordHash)) {
+    return res.status(401).render('admin/settings', { settings, success: null, error: 'Aktuelles Passwort ist falsch.' });
+  }
   if (!neuesPasswort || neuesPasswort.length < 6) {
-    return res.render('admin/settings', { settings: db.getSettings(), success: null, error: 'Das Passwort muss mindestens 6 Zeichen lang sein.' });
+    return res.render('admin/settings', { settings, success: null, error: 'Das neue Passwort muss mindestens 6 Zeichen lang sein.' });
   }
   if (neuesPasswort !== neuesPasswortWiederholen) {
-    return res.render('admin/settings', { settings: db.getSettings(), success: null, error: 'Die Passwoerter stimmen nicht ueberein.' });
+    return res.render('admin/settings', { settings, success: null, error: 'Die Passwoerter stimmen nicht ueberein.' });
   }
   db.updateSettings({ adminPasswordHash: bcrypt.hashSync(neuesPasswort, 10) });
   res.render('admin/settings', { settings: db.getSettings(), success: 'passwort', error: null });
@@ -72,7 +82,9 @@ router.post('/ortsteile', (req, res) => {
 });
 
 router.post('/ortsteile/:id', (req, res) => {
-  db.updateOrtsteil(req.params.id, { name: req.body.name, beschreibung: req.body.beschreibung || '' });
+  if (hasText(req.body.name)) {
+    db.updateOrtsteil(req.params.id, { name: req.body.name.trim(), beschreibung: req.body.beschreibung || '' });
+  }
   res.redirect('/admin/ortsteile');
 });
 
@@ -107,8 +119,12 @@ router.get('/veranstaltungen/neu', (req, res) => {
 });
 
 router.post('/veranstaltungen', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/veranstaltungen/neu');
+  }
   db.createVeranstaltung({
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     datum: req.body.datum,
     uhrzeit: req.body.uhrzeit,
     ort: req.body.ort,
@@ -128,8 +144,12 @@ router.get('/veranstaltungen/:id/bearbeiten', (req, res) => {
 });
 
 router.post('/veranstaltungen/:id', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/veranstaltungen/' + req.params.id + '/bearbeiten');
+  }
   const patch = {
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     datum: req.body.datum,
     uhrzeit: req.body.uhrzeit,
     ort: req.body.ort,
@@ -161,8 +181,12 @@ router.get('/news/neu', (req, res) => {
 });
 
 router.post('/news', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/news/neu');
+  }
   db.createNews({
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     inhalt: req.body.inhalt,
     ortsteilId: req.body.ortsteilId || null,
     organisation: req.body.organisation || '',
@@ -179,8 +203,12 @@ router.get('/news/:id/bearbeiten', (req, res) => {
 });
 
 router.post('/news/:id', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/news/' + req.params.id + '/bearbeiten');
+  }
   const patch = {
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     inhalt: req.body.inhalt,
     ortsteilId: req.body.ortsteilId || null,
     organisation: req.body.organisation || '',
@@ -209,8 +237,12 @@ router.get('/anzeigen/neu', (req, res) => {
 });
 
 router.post('/anzeigen', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/anzeigen/neu');
+  }
   db.createAnzeige({
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     typ: req.body.typ,
     text: req.body.text,
     kontakt: req.body.kontakt,
@@ -227,8 +259,12 @@ router.get('/anzeigen/:id/bearbeiten', (req, res) => {
 });
 
 router.post('/anzeigen/:id', upload.single('bild'), (req, res) => {
+  if (!hasText(req.body.titel)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/anzeigen/' + req.params.id + '/bearbeiten');
+  }
   const patch = {
-    titel: req.body.titel,
+    titel: req.body.titel.trim(),
     typ: req.body.typ,
     text: req.body.text,
     kontakt: req.body.kontakt,
@@ -262,7 +298,9 @@ router.post('/standardrubriken', (req, res) => {
 });
 
 router.post('/standardrubriken/:id', (req, res) => {
-  db.updateServicerubrik(req.params.id, { titel: req.body.titel, inhalt: req.body.inhalt || '' });
+  if (hasText(req.body.titel)) {
+    db.updateServicerubrik(req.params.id, { titel: req.body.titel.trim(), inhalt: req.body.inhalt || '' });
+  }
   res.redirect('/admin/standardrubriken');
 });
 
@@ -286,8 +324,12 @@ router.get('/sponsoren/neu', (req, res) => {
 });
 
 router.post('/sponsoren', upload.single('logo'), (req, res) => {
+  if (!hasText(req.body.name)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/sponsoren/neu');
+  }
   db.createSponsor({
-    name: req.body.name,
+    name: req.body.name.trim(),
     website: req.body.website,
     beschreibung: req.body.beschreibung,
     logoPath: publicPath(req.file)
@@ -302,8 +344,12 @@ router.get('/sponsoren/:id/bearbeiten', (req, res) => {
 });
 
 router.post('/sponsoren/:id', upload.single('logo'), (req, res) => {
+  if (!hasText(req.body.name)) {
+    if (req.file) deleteUploadedFile(publicPath(req.file));
+    return res.redirect('/admin/sponsoren/' + req.params.id + '/bearbeiten');
+  }
   const patch = {
-    name: req.body.name,
+    name: req.body.name.trim(),
     website: req.body.website,
     beschreibung: req.body.beschreibung
   };
@@ -327,6 +373,7 @@ router.get('/ausgaben', (req, res) => {
   res.render('admin/ausgaben', {
     ausgaben: db.listAusgaben(),
     settings: db.getSettings(),
+    pdfError: req.query.pdf_error === '1',
     entwurf: {
       veranstaltungen: db.listVeranstaltungen({ onlyAktuell: true }),
       news: db.listNews({ onlyAktuell: true }),
@@ -338,8 +385,9 @@ router.get('/ausgaben', (req, res) => {
   });
 });
 
-router.post('/ausgaben', async (req, res) => {
-  const ausgabe = db.createAndPublishAusgabe({});
+router.post('/ausgaben', upload.single('titelbild'), async (req, res) => {
+  const ausgabe = db.createAndPublishAusgabe({ titelbildPath: publicPath(req.file) });
+  let pdfFailed = false;
   try {
     if (!fs.existsSync(PDF_DIR)) fs.mkdirSync(PDF_DIR, { recursive: true });
     const filename = `ausgabe-${ausgabe.nummer}-${ausgabe.jahr}.pdf`;
@@ -348,8 +396,9 @@ router.post('/ausgaben', async (req, res) => {
     db.setAusgabePdfPath(ausgabe.id, '/pdf/' + filename);
   } catch (e) {
     console.error('PDF-Erstellung fehlgeschlagen:', e);
+    pdfFailed = true;
   }
-  res.redirect('/admin/ausgaben');
+  res.redirect('/admin/ausgaben' + (pdfFailed ? '?pdf_error=1' : ''));
 });
 
 module.exports = router;

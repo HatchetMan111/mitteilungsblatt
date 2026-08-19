@@ -49,6 +49,10 @@
         <h2>Passwort ändern</h2>
         <form method="POST" action="/admin/einstellungen/passwort">
           <div class="form-group">
+            <label for="aktuellesPasswort">Aktuelles Passwort</label>
+            <input type="password" id="aktuellesPasswort" name="aktuellesPasswort" required>
+          </div>
+          <div class="form-group">
             <label for="neuesPasswort">Neues Passwort</label>
             <input type="password" id="neuesPasswort" name="neuesPasswort" minlength="6" required>
           </div>

@@ -12,8 +12,32 @@
       <nav class="site-nav"><a href="/">Aktuelle Ausgabe</a> · <a href="/archiv">Archiv</a></nav>
     </header>
 
-    <% if (!ausgaben.length) { %>
+    <% if (gesamtAnzahl > 0) { %>
+      <form method="GET" action="/archiv" class="archiv-suche">
+        <input type="text" name="q" value="<%= q %>" placeholder="Suche nach Titel, Verein, Ortsteil ...">
+        <select name="jahr">
+          <option value="">Alle Jahre</option>
+          <% jahre.forEach(j => { %>
+            <option value="<%= j %>" <%= String(jahrFilter) === String(j) ? 'selected' : '' %>><%= j %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="btn-download">Suchen</button>
+        <% if (gefiltert) { %><a href="/archiv" class="archiv-suche__reset">Filter zurücksetzen</a><% } %>
+      </form>
+      <% if (gefiltert) { %>
+        <p class="form-hint" style="margin: -1rem 0 1.5rem;">
+          <%= ausgaben.length %> von <%= gesamtAnzahl %> Ausgabe<%= gesamtAnzahl === 1 ? '' : 'n' %> gefunden.
+        </p>
+      <% } %>
+    <% } %>
+
+    <% if (!gesamtAnzahl) { %>
       <div class="empty-state"><h2>Noch keine Ausgaben im Archiv</h2></div>
+    <% } else if (!ausgaben.length) { %>
+      <div class="empty-state">
+        <h2>Keine Treffer</h2>
+        <p>Für diese Suche/diesen Filter gibt es keine passende Ausgabe. <a href="/archiv">Alle Ausgaben anzeigen</a></p>
+      </div>
     <% } else { %>
       <ul class="archiv-list">
         <% ausgaben.forEach(a => { %>

@@ -4,12 +4,18 @@ const db = require('../lib/db');
 
 // Reichert eine geladene Ausgabe um vorgruppierte Meldungen (nach Rubrik)
 // an, damit die Templates (Web + PDF) nicht selbst gruppieren müssen.
-function withGroupedNews(ausgabe) {
-  if (!ausgabe) return ausgabe;
+// WICHTIG: erstellt dabei bewusst eine Kopie statt das von db.js gelieferte
+// Objekt direkt zu veraendern - das ist eine Referenz auf den In-Memory-
+// Cache, und eine Mutation wuerde die berechneten Felder beim naechsten
+// Schreibvorgang dauerhaft in db.json einschleusen.
+function withGroupedNews(ausgabeOriginal) {
+  if (!ausgabeOriginal) return ausgabeOriginal;
+  const ausgabe = { ...ausgabeOriginal };
   ausgabe.gemeindeweitNewsGruppiert = db.groupNewsByRubrik(ausgabe.gemeindeweitNews);
-  (ausgabe.ortsteile || []).forEach(ot => {
-    ot.newsGruppiert = db.groupNewsByRubrik(ot.news);
-  });
+  ausgabe.ortsteile = (ausgabe.ortsteile || []).map(ot => ({
+    ...ot,
+    newsGruppiert: db.groupNewsByRubrik(ot.news)
+  }));
   return ausgabe;
 }
 
@@ -22,8 +28,48 @@ router.get('/', (req, res) => {
   res.render('public/ausgabe', { ausgabe, settings, isPreview: false });
 });
 
+// Baut einen durchsuchbaren Text aus allen relevanten Feldern einer Ausgabe
+// (Titel, Texte, Organisationen ...), damit die Archiv-Suche auch Inhalte
+// findet, nicht nur die Ausgaben-Nummer.
+function ausgabeSearchText(a) {
+  const parts = [
+    a.gemeindeName, a.untertitel, String(a.nummer), String(a.jahr),
+    ...(a.featuredVeranstaltungen || []).flatMap(v => [v.titel, v.beschreibung, v.organisation, v.ort]),
+    ...(a.gemeindeweitVeranstaltungen || []).flatMap(v => [v.titel, v.beschreibung, v.organisation, v.ort]),
+    ...(a.gemeindeweitNews || []).flatMap(n => [n.titel, n.inhalt, n.organisation]),
+    ...(a.ortsteile || []).flatMap(ot => [
+      ot.name,
+      ...(ot.veranstaltungen || []).flatMap(v => [v.titel, v.beschreibung, v.organisation, v.ort]),
+      ...(ot.news || []).flatMap(n => [n.titel, n.inhalt, n.organisation])
+    ]),
+    ...(a.anzeigen || []).flatMap(z => [z.titel, z.text]),
+    ...(a.sponsoren || []).flatMap(s => [s.name])
+  ];
+  return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
 router.get('/archiv', (req, res) => {
-  res.render('public/archiv', { ausgaben: db.listAusgaben(), settings: db.getSettings() });
+  const alleAusgaben = db.listAusgaben();
+  const jahre = [...new Set(alleAusgaben.map(a => a.jahr))].sort((a, b) => b - a);
+  const q = (req.query.q || '').trim();
+  const jahrFilter = req.query.jahr ? parseInt(req.query.jahr, 10) : null;
+
+  let ausgaben = alleAusgaben;
+  if (jahrFilter) ausgaben = ausgaben.filter(a => a.jahr === jahrFilter);
+  if (q) {
+    const qLower = q.toLowerCase();
+    ausgaben = ausgaben.filter(a => ausgabeSearchText(a).includes(qLower));
+  }
+
+  res.render('public/archiv', {
+    ausgaben,
+    settings: db.getSettings(),
+    q,
+    jahrFilter: req.query.jahr || '',
+    jahre,
+    gefiltert: !!(q || jahrFilter),
+    gesamtAnzahl: alleAusgaben.length
+  });
 });
 
 router.get('/ausgabe/:id', (req, res) => {

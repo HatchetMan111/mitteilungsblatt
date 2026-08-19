@@ -12,9 +12,18 @@
         <div><h1>Ausgaben</h1><p>Nächste Ausgabe zusammenstellen und veröffentlichen</p></div>
       </div>
 
+      <% if (pdfError) { %>
+        <div class="alert alert-err">
+          Die Ausgabe wurde veröffentlicht, aber die PDF-Erstellung ist fehlgeschlagen.
+          Die Web-Ansicht ist trotzdem online — bitte den Server-Log prüfen
+          (<code>journalctl -u mitteilungsblatt</code>) oder es später erneut versuchen.
+          Ohne PDF fehlt lediglich der Download-Link, alle Inhalte sind nicht verloren.
+        </div>
+      <% } %>
+
       <div class="card">
         <h2>Entwurf der nächsten Ausgabe — Nr. <%= settings.naechsteAusgabenNummer %>/<%= settings.erscheinungsjahr %></h2>
-        <p class="form-hint">Enthält alle aktuell vorgemerkten Veranstaltungen und Meldungen, sortiert nach Ortsteil. Titelbild kommt aus den Einstellungen.</p>
+        <p class="form-hint">Enthält alle aktuell vorgemerkten Veranstaltungen und Meldungen, sortiert nach Ortsteil.</p>
 
         <div class="subsection-heading" style="margin-top:1.2rem;">Titelseite</div>
         <p>
@@ -42,7 +51,15 @@
         <p><%= entwurf.sponsoren.length %> Sponsor(en) werden automatisch als Dankeschön-Seite übernommen. <a href="/admin/sponsoren">Bearbeiten →</a></p>
 
         <% const gesamt = entwurf.veranstaltungen.length + entwurf.news.length; %>
-        <form method="POST" action="/admin/ausgaben" onsubmit="return confirm('Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt veröffentlichen? Alle vorgemerkten Inhalte werden danach archiviert.');" style="margin-top:1.2rem;">
+        <form method="POST" action="/admin/ausgaben" enctype="multipart/form-data" onsubmit="return confirm('Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt veröffentlichen? Alle vorgemerkten Inhalte werden danach archiviert.');" style="margin-top:1.2rem;">
+          <div class="form-group">
+            <label for="titelbild">Titelbild dieser Ausgabe (optional)</label>
+            <input type="file" id="titelbild" name="titelbild" accept="image/*">
+            <p class="form-hint">
+              Ohne Auswahl wird das Standard-Titelbild aus
+              <a href="/admin/einstellungen">Einstellungen</a> verwendet<% if (settings.titelbildPath) { %> (aktuell hinterlegt)<% } else { %> (aktuell keins hinterlegt)<% } %>.
+            </p>
+          </div>
           <button type="submit" class="btn btn-accent" <%= gesamt === 0 ? 'disabled' : '' %>>Ausgabe Nr. <%= settings.naechsteAusgabenNummer %> jetzt erstellen &amp; veröffentlichen</button>
         </form>
         <% if (gesamt === 0) { %><p class="form-hint">Noch keine Inhalte vorgemerkt — zuerst Veranstaltungen oder Meldungen anlegen.</p><% } %>

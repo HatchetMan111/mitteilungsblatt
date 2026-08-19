@@ -40,8 +40,11 @@ Meldungen und Terminen — als Web-Ansicht und als druckfertiges PDF.
 - Eine Ausgabe wird per Knopfdruck erstellt: alle aktuell vorgemerkten
   Inhalte werden zu einer Ausgabe zusammengefasst, veröffentlicht, archiviert
   und als PDF exportiert. Die nächste Ausgabe startet danach wieder leer.
-- Öffentliche Seite ohne Login: aktuelle Ausgabe + Archiv aller früheren
-  Ausgaben inkl. PDF-Download.
+  Optional kann beim Veröffentlichen ein eigenes Titelbild für genau diese
+  Ausgabe hochgeladen werden — ohne Auswahl wird automatisch das
+  Standard-Titelbild aus den Einstellungen verwendet.
+- Öffentliche Seite ohne Login: aktuelle Ausgabe + durchsuchbares Archiv
+  aller früheren Ausgaben (Volltextsuche + Jahresfilter) inkl. PDF-Download.
 
 ## Lokale Entwicklung
 
@@ -169,4 +172,26 @@ pct exec <CTID> -- systemctl start mitteilungsblatt
   oder Rechnungsstellung — das läuft weiterhin außerhalb der App.
 - Kein automatischer News-Import (RSS o.ä.) — Inhalte werden manuell gepflegt.
 - Kein E-Mail-Versand der Ausgaben, nur Web-Ansicht + PDF-Download.
+
+## Änderungen in diesem Stand (Bugfix-Runde)
+
+Bei einem systematischen Code-Review wurden folgende Probleme gefunden und behoben:
+
+- Hochgeladene Bilder wurden beim Löschen oder Ersetzen von Veranstaltungen/
+  Meldungen/Anzeigen/Sponsoren/Logo/Titelbild nie von der Festplatte entfernt
+  (verwaiste Dateien) — wird jetzt automatisch aufgeräumt.
+- Ein leerer Login-Versuch führte zu einem ungefangenen Fehler (500-Seite)
+  statt einer normalen „falsches Passwort“-Meldung.
+- Beim Anzeigen einer Ausgabe wurden berechnete Anzeigefelder versehentlich
+  in den In-Memory-Cache geschrieben und konnten dauerhaft in `data/db.json`
+  landen — behoben, indem eine Kopie statt des Original-Objekts verwendet wird.
+- Schlug die PDF-Erstellung beim Veröffentlichen fehl, gab es dafür keinerlei
+  sichtbaren Hinweis im Admin-Bereich — jetzt erscheint eine deutliche
+  Fehlermeldung auf der Ausgaben-Seite.
+- Passwort-Änderung verlangt jetzt zusätzlich die Eingabe des aktuellen
+  Passworts (verhindert dauerhafte Kontoübernahme bei gekaperter Session).
+- Pflichtfelder (Titel/Name) werden jetzt auch serverseitig geprüft, nicht
+  nur über das clientseitige HTML-Attribut.
+- Datei-Upload-Fehler (falscher Typ, zu groß) zeigen jetzt eine verständliche
+  Fehlerseite im Design der App statt eines rohen Stacktracks.
 
