@@ -7,6 +7,7 @@ function requireAuth(req, res, next) {
 }
 
 function checkCredentials(username, password) {
+  if (!username || !password) return false;
   const settings = db.getSettings();
   if (username !== settings.adminUser) return false;
   return bcrypt.compareSync(password, settings.adminPasswordHash);

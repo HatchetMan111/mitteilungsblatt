@@ -1,21 +1,29 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <title><%= ausgabe.gemeindeName %> — Mitteilungsblatt Nr. <%= ausgabe.nummer %>/<%= ausgabe.jahr %></title>
+  <title><% if (isPreview) { %>Vorschau — <% } %><%= ausgabe.gemeindeName %> — Mitteilungsblatt Nr. <%= ausgabe.nummer %>/<%= ausgabe.jahr %></title>
   <% var withPrint = true; %>
   <%- include('../partials/head') %>
 </head>
 <body>
+  <% if (isPreview) { %>
+    <div class="preview-banner no-print">
+      <strong>Vorschau</strong> — diese Ausgabe ist noch nicht veröffentlicht. So würde sie aussehen.
+      <a href="/admin/ausgaben">← Zurück zur Redaktion</a>
+    </div>
+  <% } %>
   <div class="site">
     <header class="masthead">
       <% if (settings.logoPath) { %><img src="<%= settings.logoPath %>" alt="" style="height:60px; width:auto; margin:0 auto 1rem;"><% } %>
       <div class="masthead__gemeinde"><%= ausgabe.gemeindeName %></div>
       <% if (ausgabe.untertitel) { %><div class="masthead__untertitel"><%= ausgabe.untertitel %></div><% } %>
       <div class="masthead__dateline">Ausgabe Nr. <%= ausgabe.nummer %> / <%= ausgabe.jahr %> &nbsp;·&nbsp; <%= formatDatum(ausgabe.datum) %></div>
+      <% if (!isPreview) { %>
       <nav class="site-nav">
         <a href="/">Aktuelle Ausgabe</a> · <a href="/archiv">Archiv</a>
         <% if (ausgabe.pdfPath) { %> · <a href="<%= ausgabe.pdfPath %>" class="no-print">PDF herunterladen</a><% } %>
       </nav>
+      <% } %>
     </header>
 
     <% if (ausgabe.titelbildPath) { %>

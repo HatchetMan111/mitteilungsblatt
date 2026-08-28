@@ -31,13 +31,40 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 12; // 12h
+
+const sessionStore = new FileStore({
+  path: config.SESSIONS_DIR,
+  logFn: () => {},
+  // Abgelaufene Session-Dateien automatisch aufraeumen (sonst sammeln sie
+  // sich unbegrenzt in data/sessions/ an). ttl in Sekunden, an die
+  // Cookie-Lebensdauer angeglichen; reapInterval prueft stuendlich.
+  ttl: SESSION_MAX_AGE_MS / 1000,
+  reapInterval: 3600
+});
+
+// Beim Start einmalig sofort aufraeumen, statt bis zu eine Stunde auf den
+// ersten automatischen Reap-Durchlauf der Bibliothek zu warten (relevant
+// z.B. nach einem Neustart/Update des Dienstes).
+sessionStore.list((err, files) => {
+  if (err || !files) return;
+  // list() liefert volle Dateinamen (z.B. "abc123.json"), expired()/destroy()
+  // erwarten dagegen die reine Session-ID ohne Endung - daher hier entfernen.
+  const ids = (Array.isArray(files) ? files : Object.keys(files)).map(f => f.replace(/\.json$/, ''));
+  ids.forEach(id => {
+    sessionStore.expired(id, (err2, isExpired) => {
+      if (!err2 && isExpired) sessionStore.destroy(id, () => {});
+    });
+  });
+});
+
 app.use(session({
-  store: new FileStore({ path: config.SESSIONS_DIR, logFn: () => {} }),
+  store: sessionStore,
   secret: config.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 1000 * 60 * 60 * 12, // 12h
+    maxAge: SESSION_MAX_AGE_MS,
     sameSite: 'lax', // blockt die meisten CSRF-Angriffe bereits browserseitig
     httpOnly: true
   }
@@ -71,6 +98,26 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err);
+
+  // Datei-Upload-Fehler (falscher Typ ueber den fileFilter in lib/upload.js,
+  // oder zu grosse Datei ueber Multer selbst) bekommen eine verstaendliche,
+  // zur App passende Fehlerseite statt eines rohen Stacktrace-Texts.
+  const isUploadError = err.code === 'LIMIT_FILE_SIZE' || /Nur Bilddateien/.test(err.message || '');
+  if (isUploadError) {
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Die Datei ist zu groß (maximal 8 MB erlaubt).'
+      : err.message;
+    return res.status(400).send(`
+      <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+      <link rel="stylesheet" href="/css/style.css"></head>
+      <body><div class="login-shell"><div class="login-card">
+        <h1>Datei-Upload fehlgeschlagen</h1>
+        <p class="sub">${message}</p>
+        <button onclick="history.back()" class="btn btn-accent" style="width:100%">Zurück zum Formular</button>
+      </div></div></body></html>
+    `);
+  }
+
   res.status(500).send('Ein Fehler ist aufgetreten: ' + err.message);
 });
 

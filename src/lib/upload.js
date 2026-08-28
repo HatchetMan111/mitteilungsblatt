@@ -35,4 +35,16 @@ function publicPath(file) {
   return '/uploads/' + file.filename;
 }
 
-module.exports = { upload, publicPath };
+// Loescht eine zuvor hochgeladene Datei anhand ihres web-relativen Pfads
+// (z.B. '/uploads/abc123.jpg'). Wird beim Loeschen/Ersetzen von Datensaetzen
+// aufgerufen, damit keine verwaisten Dateien liegen bleiben. Der Dateiname
+// wird ueber path.basename() bereinigt, sodass ausschliesslich Dateien
+// innerhalb von UPLOAD_DIR geloescht werden koennen (kein Path-Traversal).
+function deleteUploadedFile(webPath) {
+  if (!webPath || typeof webPath !== 'string') return;
+  const filename = path.basename(webPath);
+  const full = path.join(UPLOAD_DIR, filename);
+  fs.unlink(full, () => { /* Datei existierte evtl. schon nicht mehr - kein Problem */ });
+}
+
+module.exports = { upload, publicPath, deleteUploadedFile };
