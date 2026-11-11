@@ -2,5 +2,6 @@ node_modules/
 data/
 public/uploads/
 public/pdf/
+public/app/
 .env
 *.log

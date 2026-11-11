@@ -19,7 +19,10 @@ const storage = multer.diskStorage({
 
 function fileFilter(req, file, cb) {
   const ext = path.extname(file.originalname).toLowerCase();
-  if (!ALLOWED.has(ext)) return cb(new Error('Nur Bilddateien (jpg, png, webp, gif) sind erlaubt.'));
+  // Zusätzlich zum Dateinamen auch den vom Browser gemeldeten MIME-Typ
+  // prüfen — verhindert z. B. eine umbenannte ausführbare Datei mit .jpg-Endung.
+  const okMime = !file.mimetype || /^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype);
+  if (!ALLOWED.has(ext) || !okMime) return cb(new Error('Nur Bilddateien (jpg, png, webp, gif) sind erlaubt.'));
   cb(null, true);
 }
 

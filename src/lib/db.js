@@ -152,7 +152,11 @@ function load() {
 
 function save(db) {
   ensureDataDir();
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+  // Atomar schreiben (erst Temp-Datei, dann rename), damit ein Absturz
+  // mitten im Schreibvorgang die bestehende db.json nicht korrumpieren kann.
+  const tmp = DB_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(db, null, 2), 'utf8');
+  fs.renameSync(tmp, DB_FILE);
 }
 
 function persist() {
@@ -356,18 +360,23 @@ function deleteAnzeige(aid) {
   db.anzeigen = db.anzeigen.filter(x => x.id !== aid);
   persist();
 }
-function moveAnzeige(aid, direction) {
-  const db = load();
-  const list = listAnzeigen();
-  const idx = list.findIndex(a => a.id === aid);
+// Tauscht ein Element mit seinem Nachbarn (direction 'up'/'down') und
+// schreibt danach die order-Werte der Gesamtliste neu (1..n). Ohne diese
+// Normierung wäre der Tausch bei doppelten order-Werten (z. B. durch
+// manuelle db.json-Bearbeitung) ein stummer No-Op.
+function swapInSortedList(dbArray, sortFn, itemId, direction) {
+  const sorted = dbArray.slice().sort(sortFn);
+  const idx = sorted.findIndex(x => x.id === itemId);
   if (idx === -1) return;
   const swapWith = direction === 'up' ? idx - 1 : idx + 1;
-  if (swapWith < 0 || swapWith >= list.length) return;
-  const a1 = db.anzeigen.find(x => x.id === list[idx].id);
-  const a2 = db.anzeigen.find(x => x.id === list[swapWith].id);
-  const tmp = a1.order;
-  a1.order = a2.order;
-  a2.order = tmp;
+  if (swapWith < 0 || swapWith >= sorted.length) return;
+  const reordered = sorted.slice();
+  [reordered[idx], reordered[swapWith]] = [reordered[swapWith], reordered[idx]];
+  reordered.forEach((x, i) => { x.order = i + 1; });
+}
+function moveAnzeige(aid, direction) {
+  const db = load();
+  swapInSortedList(db.anzeigen, (a, b) => (a.order || 0) - (b.order || 0), aid, direction);
   persist();
 }
 
@@ -401,16 +410,7 @@ function deleteServicerubrik(rid) {
 }
 function moveServicerubrik(rid, direction) {
   const db = load();
-  const list = listServicerubriken();
-  const idx = list.findIndex(r => r.id === rid);
-  if (idx === -1) return;
-  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
-  if (swapWith < 0 || swapWith >= list.length) return;
-  const r1 = db.servicerubriken.find(x => x.id === list[idx].id);
-  const r2 = db.servicerubriken.find(x => x.id === list[swapWith].id);
-  const tmp = r1.order;
-  r1.order = r2.order;
-  r2.order = tmp;
+  swapInSortedList(db.servicerubriken, (a, b) => (a.order || 0) - (b.order || 0), rid, direction);
   persist();
 }
 
@@ -456,22 +456,19 @@ function deleteSponsor(sid) {
 }
 function moveSponsor(sid, direction) {
   const db = load();
-  const list = listSponsoren();
-  const idx = list.findIndex(s => s.id === sid);
-  if (idx === -1) return;
-  const swapWith = direction === 'up' ? idx - 1 : idx + 1;
-  if (swapWith < 0 || swapWith >= list.length) return;
-  const s1 = db.sponsoren.find(x => x.id === list[idx].id);
-  const s2 = db.sponsoren.find(x => x.id === list[swapWith].id);
-  const tmp = s1.order;
-  s1.order = s2.order;
-  s2.order = tmp;
+  swapInSortedList(db.sponsoren, (a, b) => (a.order || 0) - (b.order || 0), sid, direction);
   persist();
 }
 
 // ---------- Ausgaben ----------
+// Nach Jahr und dann Nummer absteigend sortieren — nicht nur nach Nummer:
+// Mit Jahreswechsel (Zählung startet wieder bei 1) würde sonst Nr. 52/2026
+// fälschlich über Nr. 2/2027 einsortiert.
+function neuereAusgabeZuerst(a, b) {
+  return (b.jahr - a.jahr) || (b.nummer - a.nummer);
+}
 function listAusgaben() {
-  return load().ausgaben.slice().sort((a, b) => b.nummer - a.nummer);
+  return load().ausgaben.slice().sort(neuereAusgabeZuerst);
 }
 function getAusgabe(aid) {
   return load().ausgaben.find(a => a.id === aid) || null;
@@ -479,7 +476,7 @@ function getAusgabe(aid) {
 function getLatestPublishedAusgabe() {
   const items = load().ausgaben.filter(a => a.status === 'published');
   if (!items.length) return null;
-  return items.sort((a, b) => b.nummer - a.nummer)[0];
+  return items.sort(neuereAusgabeZuerst)[0];
 }
 
 // Erstellt eine neue Ausgabe als Momentaufnahme aller "aktuellen" Veranstaltungen/News,
@@ -507,6 +504,10 @@ function buildAusgabeSnapshot({ titelbildPath, previewId } = {}) {
     datum: new Date().toISOString().slice(0, 10),
     gemeindeName: settings.gemeindeName,
     untertitel: settings.untertitel,
+    // BUGFIX: logoPath mit in die Momentaufnahme aufnehmen — ohne ihn wurde
+    // das Gemeinde-Logo im PDF-Namenszug nie gezeichnet (renderCover liest
+    // ausgabe.logoPath, das zuvor dauerhaft undefined war).
+    logoPath: settings.logoPath || null,
     titelbildPath: titelbildPath || settings.titelbildPath || null,
     status: 'published',
     publishedAt: new Date().toISOString(),

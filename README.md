@@ -22,20 +22,23 @@ Details siehe Abschnitt „Sicherheit“ in [`src/README.md`](src/README.md).
 ## Repo-Struktur
 
 ```
-install-mitteilungsblatt.sh   ← fertiges Installer-Skript (enthält den App-Code eingebettet)
-src/                          ← App-Quellcode (Node.js/Express)
-tools/build.sh                ← baut install-mitteilungsblatt.sh neu aus src/
+install-mitteilungsblatt.sh   ← fertiges Installer-Skript (enthält App + gebautes Frontend)
+src/                          ← Backend-Quellcode (Node.js/Express, JSON-API)
+web/                          ← Frontend-Quellcode (React + Vite)
+tools/build.sh                ← baut Frontend + install-mitteilungsblatt.sh neu aus src/ + web/
 deploy/                       ← Beispiel-Konfigurationen für HTTPS-Reverse-Proxy (Caddy/nginx)
 ```
 
 ## Nach Änderungen am Code
 
 ```bash
-# Code in src/ bearbeiten, dann:
+# Code in src/ bzw. web/ bearbeiten, dann:
 bash tools/build.sh
 git add -A
 git commit -m "Update"
 git push
 ```
 
-Damit steckt der neue Code automatisch im Installer-Skript.
+Damit steckt der neue Code (inkl. gebautem React-Frontend) automatisch im
+Installer-Skript. Nur Backend-Änderungen ohne Frontend-Neubau:
+`SKIP_WEB=1 bash tools/build.sh`.
