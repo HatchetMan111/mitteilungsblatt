@@ -75,7 +75,7 @@ export default function Einstellungen() {
           <FormRow label="Untertitel">
             <input type="text" value={s.untertitel || ''} onChange={e => setS({ ...s, untertitel: e.target.value })} placeholder="z. B. Amtliches Mitteilungsblatt" />
           </FormRow>
-          <FormRow label="Erscheinungsjahr (für die Ausgaben-Zählung)">
+          <FormRow label="Erscheinungsjahr (für die Ausgaben-Zählung)" hint="Bei Jahreswechsel startet die Ausgaben-Nummer automatisch wieder bei 1.">
             <input type="number" value={s.erscheinungsjahr} onChange={e => setS({ ...s, erscheinungsjahr: e.target.value })} />
           </FormRow>
           <BildInput

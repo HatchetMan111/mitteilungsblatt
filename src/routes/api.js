@@ -200,6 +200,12 @@ router.put('/admin/settings',
     if (!hasText(patch.gemeindeName)) {
       return res.status(400).json({ error: 'Der Gemeinde-Name darf nicht leer sein.' });
     }
+    // Jahreswechsel: Bei neuem Erscheinungsjahr startet die Ausgaben-Zählung
+    // wieder bei 1 (sonst würde die erste Ausgabe des neuen Jahres als
+    // "Nr. 53/2027" durchlaufen, weil der alte Zähler stehen bleibt).
+    if (patch.erscheinungsjahr !== db.getSettings().erscheinungsjahr) {
+      patch.naechsteAusgabenNummer = 1;
+    }
     db.updateSettings(patch);
     res.json({ settings: adminSettings() });
   }
@@ -520,11 +526,19 @@ function entwurfCount() {
 router.get('/admin/vorschau', (req, res) => {
   if (entwurfCount() === 0) return res.status(404).json({ error: 'Keine Inhalte für eine Vorschau vorgemerkt.' });
   res.json({
-    ausgabe: withGroupedNews(db.buildAusgabeSnapshot({ previewId: 'vorschau' })),
+    ausgabe: vorschauSnapshot(),
     settings: publicSettings(),
     isPreview: true
   });
 });
+
+// Snapshot für die Web-Vorschau: die internen Referenzfelder (_quell*)
+// haben in der Antwort nichts verloren — sie gehören nur der Veröffentlichung.
+function vorschauSnapshot() {
+  const { _quellVeranstaltungen: _v, _quellNews: _n, _quellAnzeigen: _a, ...ausgabe } =
+    db.buildAusgabeSnapshot({ previewId: 'vorschau' });
+  return withGroupedNews(ausgabe);
+}
 
 router.get('/admin/vorschau/pdf', async (req, res) => {
   if (entwurfCount() === 0) return res.status(404).json({ error: 'Keine Inhalte für eine Vorschau vorgemerkt.' });
